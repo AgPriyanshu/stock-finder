@@ -35,7 +35,7 @@ spec:
               mountPath: /var/lib/postgresql/data
       containers:
         - name: postgres
-          image: postgis/postgis:17-3.5
+          image: postgis/postgis:17-3.5-alpine
           env:
             - name: POSTGRES_USER
               value: "postgres"
