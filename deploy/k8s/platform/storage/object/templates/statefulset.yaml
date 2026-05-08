@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: seaweedfs
+  labels:
+    app: seaweedfs
+spec:
+  serviceName: seaweedfs-headless
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: seaweedfs
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+    spec:
+      containers:
+      - name: seaweedfs
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          weed server \
+            -dir=/data \
+            -master.port={{ .Values.service.masterPort }} \
+            -volume.port={{ .Values.service.volumePort }} \
+            {{- if .Values.seaweedfsConfig.s3Enabled }}
+            -s3 \
+            -s3.port={{ .Values.service.s3Port }} \
+            -s3.config=/etc/seaweedfs/s3-config/config.json \
+            {{- end }}
+            {{- if .Values.seaweedfsConfig.filerEnabled }}
+            -filer \
+            -filer.port={{ .Values.service.filerPort }} \
+            {{- end }}
+            {{- if .Values.seaweedfsConfig.dataCenter }}
+            -dataCenter={{ .Values.seaweedfsConfig.dataCenter }} \
+            {{- end }}
+            -ip.bind=0.0.0.0
+        ports:
+        - name: master
+          containerPort: {{ .Values.service.masterPort }}
+          protocol: TCP
+        - name: volume
+          containerPort: {{ .Values.service.volumePort }}
+          protocol: TCP
+        {{- if .Values.seaweedfsConfig.s3Enabled }}
+        - name: s3
+          containerPort: {{ .Values.service.s3Port }}
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.seaweedfsConfig.filerEnabled }}
+        - name: filer
+          containerPort: {{ .Values.service.filerPort }}
+          protocol: TCP
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /cluster/status
+            port: master
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /cluster/status
+            port: master
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          {{- toYaml .Values.seaweedfsResources | nindent 10 }}
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: s3-config
+          mountPath: /etc/seaweedfs/s3-config
+          readOnly: true
+        - name: s3-config
+          mountPath: /etc/seaweedfs/security.toml
+          subPath: security.toml
+          readOnly: true
+      volumes:
+      - name: s3-config
+        configMap:
+          name: seaweedfs-s3-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.seaweefsPersistence.size }}

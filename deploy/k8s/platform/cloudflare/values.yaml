@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: cloudflare/cloudflared
+  tag: latest
+  pullPolicy: IfNotPresent
+
+tunnel:
+  name: stockfinder
+  credentialsJson: |
+    {
+      "AccountTag": "",
+      "TunnelID": "",
+      "TunnelName": "stockfinder",
+      "TunnelSecret": ""
+    }
+
+ingress:
+  - hostname: stockfinder.app
+    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
+  - hostname: api.stockfinder.app
+    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
+  - hostname: s3.stockfinder.app
+    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

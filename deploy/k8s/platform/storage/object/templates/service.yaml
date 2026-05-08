@@ -1,0 +1,92 @@
+---
+# Headless service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-headless
+  labels:
+    app: seaweedfs
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: seaweedfs
+  ports:
+  - name: master
+    port: {{ .Values.service.masterPort }}
+    targetPort: master
+  - name: volume
+    port: {{ .Values.service.volumePort }}
+    targetPort: volume
+
+---
+# Master server service
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-master
+  labels:
+    app: seaweedfs
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: seaweedfs
+  ports:
+  - name: master
+    port: {{ .Values.service.masterPort }}
+    targetPort: master
+
+---
+# Volume server service
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-volume
+  labels:
+    app: seaweedfs
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: seaweedfs
+  ports:
+  - name: volume
+    port: {{ .Values.service.volumePort }}
+    targetPort: volume
+
+{{- if .Values.seaweedfsConfig.s3Enabled }}
+---
+# S3 API service
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-s3
+  labels:
+    app: seaweedfs
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: seaweedfs
+  ports:
+  - name: s3
+    port: {{ .Values.service.s3Port }}
+    targetPort: s3
+{{- end }}
+
+{{- if .Values.seaweedfsConfig.filerEnabled }}
+---
+# Filer service (UI and file system)
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-filer
+  labels:
+    app: seaweedfs
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: seaweedfs
+  ports:
+  - name: filer
+    port: {{ .Values.service.filerPort }}
+    targetPort: filer
+{{- end }}

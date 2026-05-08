@@ -1,0 +1,53 @@
+# .pre-commit-config.yaml
+# Python hooks scoped to backend/. Frontend has its own husky + lint-staged config.
+repos:
+  # isort: Sorts imports according to PEP 8.
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        files: ^backend/
+        exclude: ^(deploy/|backend/.*/migrations/)
+
+  # autoflake: Removes unused imports and variables.
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.0
+    hooks:
+      - id: autoflake
+        args:
+          [
+            "--in-place",
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+            "--expand-star-imports",
+            "--remove-duplicate-keys",
+            "--ignore-init-module-imports",
+          ]
+        language_version: python3
+        files: ^backend/
+
+  # Ruff: Fast Python linter and formatter.
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        files: ^backend/
+
+  # Generic file/quality checks.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-ast
+        files: ^backend/.*\.py$
+      - id: check-yaml
+        exclude: ^deploy/
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: end-of-file-fixer
+      - id: debug-statements
+        files: ^backend/.*\.py$
+      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-added-large-files

@@ -1,0 +1,46 @@
+appName: frontend-app
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/agpriyanshu/stock-finder-frontend
+  tag: latest
+  pullPolicy: Always
+
+# Public backend API URL (used at build time via VITE_API_BASE_URL)
+# Build with: docker build --build-arg VITE_API_BASE_URL=https://api.stockfinder.app -t stock-finder-frontend .
+backend:
+  publicUrl: "https://api.stockfinder.app"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+serviceAccount:
+  create: false
+  name: ghcr-sa
+
+frontendResources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+nodeSelector: {}
+
+# Liveness and readiness probes
+probes:
+  enabled: true
+  livenessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readinessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5

@@ -1,0 +1,7 @@
+# Docker registry credentials for GHCR
+# Used to create the ghcr-secret imagePullSecret
+docker:
+  server: ghcr.io
+  username: agpriyanshu         # your GitHub username
+  password: ""                  # set via: --set docker.password=<your_PAT>
+  email: ""                     # your GitHub email

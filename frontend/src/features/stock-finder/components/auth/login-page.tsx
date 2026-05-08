@@ -1,0 +1,213 @@
+import {
+  Box,
+  Button,
+  Field,
+  Heading,
+  Input,
+  InputGroup,
+  PinInput,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { FiArrowLeft, FiPhone } from "react-icons/fi";
+import { Link, useNavigate } from "react-router";
+import { z } from "zod";
+import { useRequestOtp, useVerifyOtp } from "api/stock-finder/use-otp";
+import { RoutePath } from "app/router/constants";
+import { toaster } from "design-system/toaster";
+import { BrandHeading } from "../brand-heading";
+
+const phoneSchema = z.object({
+  phone: z
+    .string()
+    .regex(/^\+91[6-9]\d{9}$/, "Enter a valid Indian mobile, e.g. +919876543210"),
+});
+
+const otpSchema = z.object({
+  otp: z.string().length(6, "Enter the 6-digit OTP"),
+});
+
+type PhoneForm = z.infer<typeof phoneSchema>;
+type OtpForm = z.infer<typeof otpSchema>;
+
+export const LoginPage = () => {
+  const navigate = useNavigate();
+  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<"phone" | "otp">("phone");
+
+  const { mutate: requestOtp, isPending: isSending } = useRequestOtp();
+  const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp();
+
+  const phoneForm = useForm<PhoneForm>({ resolver: zodResolver(phoneSchema) });
+  const otpForm = useForm<OtpForm>({ resolver: zodResolver(otpSchema) });
+
+  const onPhoneSubmit = (data: PhoneForm) => {
+    requestOtp(data.phone, {
+      onSuccess: () => {
+        setPhone(data.phone);
+        setStep("otp");
+        toaster.create({ description: "OTP sent to your phone.", type: "success" });
+      },
+      onError: () => {
+        toaster.create({ description: "Failed to send OTP. Try again.", type: "error" });
+      },
+    });
+  };
+
+  const onOtpSubmit = (data: OtpForm) => {
+    verifyOtp(
+      { phone, otp: data.otp },
+      {
+        onSuccess: (res) => {
+          if (res.data.data.hasShop) {
+            navigate(RoutePath.OwnerInventory, { replace: true });
+          } else {
+            navigate(RoutePath.OwnerOnboarding, {
+              replace: true,
+              state: { phone: res.data.data.user.phone },
+            });
+          }
+        },
+        onError: (err: unknown) => {
+          const msg =
+            (err as { response?: { data?: { meta?: { message?: string } } } })
+              ?.response?.data?.meta?.message ||
+            "Verification failed. Please try again.";
+          toaster.create({ description: msg, type: "error" });
+        },
+      }
+    );
+  };
+
+  return (
+    <Box
+      className="stock-finder-login-page"
+      minH="100dvh"
+      w="100vw"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      bg="bg.canvas"
+      px={4}
+      py={8}
+    >
+      <VStack gap={8} w="full" maxW="sm">
+        <VStack gap={1} textAlign="center">
+          <BrandHeading size="2xl" />
+          <Text color="fg.muted" fontSize="sm">
+            Shop owner portal
+          </Text>
+        </VStack>
+
+        {step === "phone" ? (
+          <Box
+            w="full"
+            borderWidth="1px"
+            borderColor="border.default"
+            borderRadius="lg"
+            p={6}
+          >
+            <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)}>
+              <VStack gap={5} align="stretch">
+                <VStack gap={1} align="stretch">
+                  <Heading size="md">Welcome</Heading>
+                  <Text fontSize="sm" color="fg.muted">
+                    Enter your mobile number to receive a one-time password.
+                  </Text>
+                </VStack>
+
+                <Field.Root invalid={!!phoneForm.formState.errors.phone}>
+                  <Field.Label>Mobile number</Field.Label>
+                  <InputGroup startElement={<FiPhone />}>
+                    <Input
+                      {...phoneForm.register("phone")}
+                      type="tel"
+                      placeholder="+919876543210"
+                      autoComplete="tel"
+                    />
+                  </InputGroup>
+                  {phoneForm.formState.errors.phone && (
+                    <Field.ErrorText>
+                      {phoneForm.formState.errors.phone.message}
+                    </Field.ErrorText>
+                  )}
+                </Field.Root>
+
+                <Button type="submit" loading={isSending} w="full">
+                  Send OTP
+                </Button>
+              </VStack>
+            </form>
+          </Box>
+        ) : (
+          <Box
+            w="full"
+            borderWidth="1px"
+            borderColor="border.default"
+            borderRadius="lg"
+            p={6}
+          >
+            <form onSubmit={otpForm.handleSubmit(onOtpSubmit)}>
+              <VStack gap={5} align="stretch">
+                <VStack gap={1} align="stretch">
+                  <Heading size="md">Enter OTP</Heading>
+                  <Text fontSize="sm" color="fg.muted">
+                    We sent a 6-digit code to {phone}.
+                  </Text>
+                </VStack>
+
+                <Field.Root invalid={!!otpForm.formState.errors.otp}>
+                  <Field.Label>One-time password</Field.Label>
+                  <Controller
+                    name="otp"
+                    control={otpForm.control}
+                    render={({ field }) => (
+                      <PinInput.Root
+                        count={6}
+                        onValueComplete={(details) => field.onChange(details.valueAsString)}
+                      >
+                        <PinInput.HiddenInput />
+                        <PinInput.Control>
+                          {Array.from({ length: 6 }).map((_, i) => (
+                            <PinInput.Input key={i} index={i} />
+                          ))}
+                        </PinInput.Control>
+                      </PinInput.Root>
+                    )}
+                  />
+                  {otpForm.formState.errors.otp && (
+                    <Field.ErrorText>
+                      {otpForm.formState.errors.otp.message}
+                    </Field.ErrorText>
+                  )}
+                </Field.Root>
+
+                <Button type="submit" loading={isVerifying} w="full">
+                  Verify & sign in
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setStep("phone")}
+                >
+                  Change number
+                </Button>
+              </VStack>
+            </form>
+          </Box>
+        )}
+
+        <Button asChild variant="ghost" size="sm" color="fg.muted">
+          <Link to="/">
+            <FiArrowLeft /> Back to search
+          </Link>
+        </Button>
+      </VStack>
+    </Box>
+  );
+};

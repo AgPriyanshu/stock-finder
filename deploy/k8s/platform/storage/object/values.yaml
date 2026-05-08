@@ -1,0 +1,40 @@
+# SeaweedFS Configuration Values
+
+# SeaweedFS image configuration
+image:
+  repository: chrislusf/seaweedfs
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Number of SeaweedFS replicas
+replicas: 1
+
+# Resource limits and requests
+seaweedfsResources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Persistent storage configuration
+seaweefsPersistence:
+  size: 50Gi
+
+# Service configuration
+service:
+  type: ClusterIP
+  masterPort: 9333
+  volumePort: 8080
+  s3Port: 8333
+  filerPort: 8888
+
+# SeaweedFS server configuration
+seaweedfsConfig:
+  # Enable S3 API
+  s3Enabled: true
+  # Enable Filer (file system interface with UI)
+  filerEnabled: true
+  # Data center name (optional)
+  dataCenter: "dc1"

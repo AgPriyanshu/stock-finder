@@ -1,0 +1,9 @@
+replicaCount: 1
+
+service:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 32525 # pin it (important)

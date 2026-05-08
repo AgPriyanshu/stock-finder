@@ -1,0 +1,93 @@
+appName: backend-app
+
+image:
+  repository: ghcr.io/agpriyanshu/stock-finder-backend
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+serviceAccount:
+  create: false
+  name: ghcr-sa
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+workerResources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+beatResources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 150m
+    memory: 128Mi
+
+nodeSelector: {}
+
+# HPA
+minReplicas: 1
+maxReplicas: 4
+averageUtilization: 50
+
+# Environment variables
+env:
+  - name: DEBUG
+    value: "0"
+  - name: DJANGO_SECRET_KEY
+    value: "change-me-to-a-long-random-string-in-production"
+  - name: ALLOWED_HOSTS
+    value: "api.stockfinder.app,localhost"
+  - name: CORS_ALLOWED_ORIGINS
+    value: "https://stockfinder.app"
+  - name: CSRF_TRUSTED_ORIGINS
+    value: "https://api.stockfinder.app"
+  # Database
+  - name: DB_HOST
+    value: "postgres"
+  - name: DB_PORT
+    value: "5432"
+  - name: DB_NAME
+    value: "stock_finder"
+  - name: DB_USER
+    value: "postgres"
+  - name: DB_PASSWORD
+    value: "postgres"
+  # Cache
+  - name: REDIS_HOST
+    value: "redis"
+  - name: REDIS_PORT
+    value: "6379"
+  # SeaweedFS S3
+  - name: S3_ENDPOINT
+    value: "http://seaweedfs-s3:8333"
+  - name: S3_PUBLIC_ENDPOINT
+    value: "https://s3.stockfinder.app"
+  - name: S3_REGION
+    value: "ap-south-1"
+  - name: S3_BUCKET
+    value: "stock-finder"
+  - name: S3_ACCESS_KEY
+    value: "seaweedfsadmin"
+  - name: S3_SECRET_KEY
+    value: "seaweedfsadmin123"
+  # JWT
+  - name: SF_JWT_SECRET
+    value: "change-me-to-32-random-bytes-in-production"
+  - name: SF_JWT_TTL_SECONDS
+    value: "2592000"
