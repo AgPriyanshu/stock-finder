@@ -16,12 +16,12 @@ tunnel:
     }
 
 ingress:
-  - hostname: stockfinder.app
-    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
-  - hostname: api.stockfinder.app
-    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
-  - hostname: s3.stockfinder.app
-    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
+  - hostname: worldofapps.bar
+    service: http://nginx-gateway-nginx-gateway-fabric.gateway-ns.svc.cluster.local
+  - hostname: api.worldofapps.bar
+    service: http://nginx-gateway-nginx-gateway-fabric.gateway-ns.svc.cluster.local
+  - hostname: s3.worldofapps.bar
+    service: http://nginx-gateway-nginx-gateway-fabric.gateway-ns.svc.cluster.local
 
 resources:
   requests:

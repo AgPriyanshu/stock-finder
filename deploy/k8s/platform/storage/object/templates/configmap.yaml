@@ -28,4 +28,4 @@ data:
     }
   security.toml: |
     [cors.allowed_origins]
-    values = "https://stockfinder.app,https://api.stockfinder.app,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
+    values = "https://worldofapps.bar,https://api.worldofapps.bar,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"

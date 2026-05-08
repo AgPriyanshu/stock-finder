@@ -55,11 +55,11 @@ env:
   - name: DJANGO_SECRET_KEY
     value: "change-me-to-a-long-random-string-in-production"
   - name: ALLOWED_HOSTS
-    value: "api.stockfinder.app,localhost"
+    value: "api.worldofapps.bar,localhost"
   - name: CORS_ALLOWED_ORIGINS
-    value: "https://stockfinder.app"
+    value: "https://worldofapps.bar"
   - name: CSRF_TRUSTED_ORIGINS
-    value: "https://api.stockfinder.app"
+    value: "https://api.worldofapps.bar"
   # Database
   - name: DB_HOST
     value: "postgres"
@@ -80,7 +80,7 @@ env:
   - name: S3_ENDPOINT
     value: "http://seaweedfs-s3:8333"
   - name: S3_PUBLIC_ENDPOINT
-    value: "https://s3.stockfinder.app"
+    value: "https://s3.worldofapps.bar"
   - name: S3_REGION
     value: "ap-south-1"
   - name: S3_BUCKET
