@@ -1,5 +1,5 @@
 import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
-import type { DsSearchItem } from "api/dead-stock";
+import type { SfSearchItem as DsSearchItem } from "api/stock-finder/types";
 
 const SOURCE_ID = "dead-stock-shops";
 const CLUSTERS_ID = "dead-stock-shop-clusters";

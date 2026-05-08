@@ -2,8 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "api": ["src/api/index.ts"],
       "api/*": ["src/api/*"],
       "app/*": ["src/app/*"],
+      "design-system": ["src/design-system/index.ts"],
       "design-system/*": ["src/design-system/*"],
       "shared/*": ["src/shared/*"]
     },
