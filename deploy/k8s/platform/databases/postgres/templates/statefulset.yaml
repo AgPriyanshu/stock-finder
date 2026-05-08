@@ -17,8 +17,7 @@ spec:
       terminationGracePeriodSeconds: 10
       # Security context at pod level for fsGroup
       securityContext:
-        fsGroup: 70
-      # Init container to fix permissions
+        fsGroup: 999
       initContainers:
         - name: init-permissions
           image: busybox:1.36
@@ -27,7 +26,7 @@ spec:
             - -c
             - |
               mkdir -p /var/lib/postgresql/data/pgdata
-              chown -R 70:70 /var/lib/postgresql/data
+              chown -R 999:999 /var/lib/postgresql/data
               chmod 700 /var/lib/postgresql/data/pgdata
           securityContext:
             runAsUser: 0
@@ -36,28 +35,18 @@ spec:
               mountPath: /var/lib/postgresql/data
       containers:
         - name: postgres
-          image: kartoza/postgis:17-3.5
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 70
+          image: postgis/postgis:17-3.5
           env:
             - name: POSTGRES_USER
               value: "postgres"
-            - name: POSTGRES_DBNAME
+            - name: POSTGRES_DB
               value: "postgres"
-            - name: POSTGRES_PASS
+            - name: POSTGRES_PASSWORD
               value: "postgres"
             - name: PGDATA
               value: "/var/lib/postgresql/data/pgdata"
-            - name: SHARED_PRELOAD_LIBRARIES
+            - name: POSTGRES_SHARED_PRELOAD_LIBRARIES
               value: "pg_stat_statements"
-            - name: EXTRA_CONF
-              value: |
-                shared_buffers={{ .Values.postgresConfig.sharedBuffers }}
-                work_mem={{ .Values.postgresConfig.workMem }}
-                maintenance_work_mem={{ .Values.postgresConfig.maintenanceWorkMem }}
-                effective_cache_size={{ .Values.postgresConfig.effectiveCacheSize }}
-                max_connections={{ .Values.postgresConfig.maxConnections }}
           resources:
 {{ toYaml .Values.postgresResources | nindent 12 }}
           ports:
