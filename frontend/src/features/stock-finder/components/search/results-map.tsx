@@ -50,6 +50,7 @@ export const ResultsMap = ({
   lng,
   myLat,
   myLng,
+  radiusKm,
   isVisible,
   hasQuery,
 }: ResultsMapProps) => {
@@ -149,15 +150,30 @@ export const ResultsMap = ({
     const map = mapRef.current;
     if (!map) return;
 
-    const fitToItems = () => {
+    const fit = () => {
       void mountShopMarkers(map, sortedItems);
 
+      // When a search center + radius are known, always show the full search area.
+      if (lat && lng && radiusKm) {
+        const latOff = radiusKm / 111;
+        const lngOff = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
+        isProgrammaticMoveRef.current = true;
+        map.fitBounds(
+          new maplibregl.LngLatBounds(
+            [lng - lngOff, lat - latOff],
+            [lng + lngOff, lat + latOff],
+          ),
+          { padding: 48, maxZoom: 15, duration: 600 },
+        );
+        return;
+      }
+
+      // Fallback: no search center — fit to available item locations.
       const located = sortedItems.filter(
-        (item) => item.shopLat !== null && item.shopLng !== null
+        (item) => item.shopLat !== null && item.shopLng !== null,
       );
       if (located.length === 0) return;
 
-      // Deduplicate to unique shop locations before computing bounds.
       const seen = new Set<string>();
       const points = located.filter((item) => {
         if (seen.has(item.shop)) return false;
@@ -167,19 +183,15 @@ export const ResultsMap = ({
 
       const lngs = points.map((item) => item.shopLng as number);
       const lats = points.map((item) => item.shopLat as number);
-
-      // Extend bounds to include the user's location if available.
       if (myLng != null) lngs.push(myLng);
       if (myLat != null) lats.push(myLat);
 
       const bounds = new maplibregl.LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
-        [Math.max(...lngs), Math.max(...lats)]
+        [Math.max(...lngs), Math.max(...lats)],
       );
-
       isProgrammaticMoveRef.current = true;
 
-      // Single shop with no user location — fly to it to avoid over-zooming.
       if (points.length === 1 && myLat == null) {
         map.flyTo({ center: bounds.getCenter(), zoom: 14, duration: 600 });
         return;
@@ -188,12 +200,9 @@ export const ResultsMap = ({
       map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 600 });
     };
 
-    if (map.isStyleLoaded()) {
-      fitToItems();
-    } else {
-      map.once("load", fitToItems);
-    }
-  }, [sortedItems, myLat, myLng]);
+    if (map.isStyleLoaded()) fit();
+    else map.once("load", fit);
+  }, [sortedItems, myLat, myLng, lat, lng, radiusKm]);
 
   // Keep the current-location marker in sync with the buyer's actual position.
   useEffect(() => {

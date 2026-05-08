@@ -18,6 +18,7 @@ import {
   usePublicShop,
   usePublicShopItems,
 } from "api/stock-finder";
+import { ConfirmDialog } from "design-system/confirm-dialog/confirm-dialog";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { ResultCard } from "../search/result-card";
 import { getRecentLead } from "../../hooks/use-recent-leads";
@@ -42,12 +43,22 @@ export const ShopProfile = () => {
   const createReport = useCreateReport();
   const [contactItem, setContactItem] = useState<SfSearchItem | null>(null);
   const [recentTick, setRecentTick] = useState(0);
+  const [reportConfirmOpen, setReportConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!shop) {
       return;
     }
-    document.title = `${shop.name} - Dead Stock Finder`;
+    document.title = `${shop.name} - Stock Finder`;
+    return () => {
+      document.title = "Stock Finder";
+    };
+  }, [shop]);
+
+  useEffect(() => {
+    if (!shop) {
+      return;
+    }
     const description = items
       .slice(0, 3)
       .map((item) => item.name)
@@ -81,6 +92,8 @@ export const ShopProfile = () => {
       toaster.success({ title: "Shop reported" });
     } catch {
       toaster.error({ title: "Failed to report shop" });
+    } finally {
+      setReportConfirmOpen(false);
     }
   };
 
@@ -102,8 +115,7 @@ export const ShopProfile = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={reportShop}
-          loading={createReport.isPending}
+          onClick={() => setReportConfirmOpen(true)}
         >
           Report shop
         </Button>
@@ -140,6 +152,15 @@ export const ShopProfile = () => {
         isOpen={!!contactItem}
         onClose={() => setContactItem(null)}
         onSent={() => setRecentTick((value) => value + 1)}
+      />
+      <ConfirmDialog
+        isOpen={reportConfirmOpen}
+        onClose={() => setReportConfirmOpen(false)}
+        onConfirm={reportShop}
+        title="Report this shop?"
+        description="This will flag the shop for review. Only report if the listing is spam, fraudulent, or violates our policies."
+        confirmLabel="Report"
+        isLoading={createReport.isPending}
       />
     </VStack>
   );

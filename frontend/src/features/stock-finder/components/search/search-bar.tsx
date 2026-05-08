@@ -39,6 +39,15 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
   );
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (draft !== value) {
+        onChange(draft);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [draft, onChange, value]);
+
+  useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) {
         setOpen(false);

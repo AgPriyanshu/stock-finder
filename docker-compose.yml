@@ -44,26 +44,26 @@ services:
         condition: service_healthy
     env_file: ./.env
 
-  beat:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: stock_finder_beat
-    command: celery -A stock_finder beat -l info
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256m
-    volumes:
-      - ./backend:/app
-    entrypoint: ""
-    depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
-    env_file: ./.env
+  # beat:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: stock_finder_beat
+  #   command: celery -A stock_finder beat -l info
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.25"
+  #         memory: 256m
+  #   volumes:
+  #     - ./backend:/app
+  #   entrypoint: ""
+  #   depends_on:
+  #     redis:
+  #       condition: service_started
+  #     db:
+  #       condition: service_healthy
+  #   env_file: ./.env
 
   db:
     platform: linux/amd64

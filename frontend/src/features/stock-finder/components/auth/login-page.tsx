@@ -10,19 +10,17 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { useState } from "react";
-// import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-// import { FiArrowLeft, FiPhone } from "react-icons/fi";
 import { FiArrowLeft } from "react-icons/fi";
 import { MdEmail, MdLock } from "react-icons/md";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
-// import { useRequestOtp, useVerifyOtp } from "api/stock-finder/use-otp";
 import { useLogin } from "api/auth/auth-api";
 import { RoutePath } from "app/router/constants";
 import { toaster } from "design-system/toaster";
 import { BrandHeading } from "../brand-heading";
+import { ShopSignupDialog } from "../search/shop-signup-dialog";
 
 // ── OTP schemas (kept for future re-enable) ──────────────────────────────────
 // const phoneSchema = z.object({
@@ -57,6 +55,7 @@ export const LoginPage = () => {
   // const otpForm = useForm<OtpForm>({ resolver: zodResolver(otpSchema) });
 
   const { mutate: login, isPending } = useLogin();
+  const [signupOpen, setSignupOpen] = useState(false);
 
   const form = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
@@ -160,12 +159,12 @@ export const LoginPage = () => {
               </VStack>
 
               <Field.Root invalid={!!form.formState.errors.username}>
-                <Field.Label>Username</Field.Label>
+                <Field.Label>Email</Field.Label>
                 <InputGroup startElement={<MdEmail />}>
                   <Input
                     {...form.register("username")}
-                    type="text"
-                    placeholder="your username"
+                    type="email"
+                    placeholder="your email"
                     autoComplete="username"
                   />
                 </InputGroup>
@@ -265,12 +264,29 @@ export const LoginPage = () => {
         )}
         ── end OTP login ──────────────────────────────────────────────────── */}
 
+        <Text fontSize="sm" color="fg.muted" textAlign="center">
+          New here?{" "}
+          <Button
+            variant="plain"
+            size="sm"
+            color="fg"
+            textDecoration="underline"
+            p={0}
+            h="auto"
+            onClick={() => setSignupOpen(true)}
+          >
+            Create a shop account
+          </Button>
+        </Text>
+
         <Button asChild variant="ghost" size="sm" color="fg.muted">
           <Link to="/">
             <FiArrowLeft /> Back to search
           </Link>
         </Button>
       </VStack>
+
+      <ShopSignupDialog isOpen={signupOpen} onClose={() => setSignupOpen(false)} />
     </Box>
   );
 };

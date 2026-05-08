@@ -1,6 +1,7 @@
 import {
   Badge,
   Box,
+  Button,
   HStack,
   IconButton,
   Image,
@@ -99,8 +100,8 @@ export const MapItemCarousel = ({
             alignItems="center"
             pl={2}
             pr={1}
-            opacity={hasPrev ? 1 : 0.2}
-            pointerEvents={hasPrev ? "auto" : "none"}
+            opacity={hasPrev ? 1 : 0.6}
+            cursor={hasPrev ? "pointer" : "disabled"}
           >
             <IconButton
               size="sm"
@@ -146,7 +147,12 @@ export const MapItemCarousel = ({
 
             <VStack align="stretch" gap={2} p={3} flex={1} minW={0}>
               <Box>
-                <HStack justify="space-between" gap={2} align="start">
+                <HStack
+                  justify="space-between"
+                  gap={2}
+                  align="center"
+                  w={"full"}
+                >
                   <Text
                     fontWeight="semibold"
                     fontSize="sm"
@@ -155,9 +161,23 @@ export const MapItemCarousel = ({
                   >
                     {item.name}
                   </Text>
-                  <Text fontWeight="bold" fontSize="sm" flexShrink={0}>
-                    {item.price ? `₹${item.price}` : "Ask price"}
-                  </Text>
+                  {item.price ? (
+                    <Text fontWeight="bold" fontSize="sm" flexShrink={0}>
+                      ₹{item.price}
+                    </Text>
+                  ) : (
+                    <Button
+                      asChild
+                      size="2xs"
+                      variant="outline"
+                      flexShrink={0}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                        Ask price
+                      </a>
+                    </Button>
+                  )}
                 </HStack>
                 <Text fontSize="xs" color="fg.muted" lineClamp={1}>
                   {item.shopName}
@@ -165,9 +185,15 @@ export const MapItemCarousel = ({
               </Box>
 
               <HStack gap={1.5} wrap="wrap">
-                <Badge size="sm" variant="subtle">
-                  {item.condition.replace("_", " ")}
-                </Badge>
+                {item.condition === "new" ? (
+                  <Badge size="sm" variant="subtle" color="green.500">
+                    New
+                  </Badge>
+                ) : (
+                  <Badge size="sm" variant="subtle">
+                    {item.condition.replace("_", " ")}
+                  </Badge>
+                )}
                 {distance && (
                   <Badge size="sm" variant="subtle">
                     <FiMapPin /> {distance}
@@ -204,8 +230,8 @@ export const MapItemCarousel = ({
             alignItems="center"
             pr={2}
             pl={1}
-            opacity={hasNext ? 1 : 0.2}
-            pointerEvents={hasNext ? "auto" : "none"}
+            opacity={hasNext ? 1 : 0.6}
+            cursor={hasNext ? "pointer" : "disabled"}
           >
             <IconButton
               size="sm"

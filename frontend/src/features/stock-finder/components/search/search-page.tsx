@@ -3,7 +3,7 @@ import type { SfSearchParams } from "api/stock-finder";
 import { useCategories, useSearchItems } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { BrandHeading } from "../brand-heading";
 import {
   getOwnerToken,
@@ -187,7 +187,9 @@ export const SearchPage = () => {
         py={3}
       >
         <HStack justify="center" mb={3} mt={3}>
-          <BrandHeading size="3xl" />
+          <Link to="/">
+            <BrandHeading size="3xl" />
+          </Link>
         </HStack>
         <HStack justify="space-between" align="flex-start" wrap="wrap" gap={4}>
           <VStack align="stretch" gap={2} maxW="2xl" flex={1}>

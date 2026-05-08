@@ -47,7 +47,7 @@ export const ResultCard = ({
     item.images[0]?.cardUrl ||
     item.images[0]?.thumbUrl;
   const whatsappText = encodeURIComponent(
-    `Hi, is "${item.name}" still available?`
+    `Hi, is "${item.name}" still available?`,
   );
   const whatsappUrl = `https://wa.me/${item.shopPhone}?text=${whatsappText}`;
 
@@ -91,12 +91,24 @@ export const ResultCard = ({
                 {item.shopName}
               </Text>
             </Box>
-            <Text fontWeight="bold" flexShrink={0}>
-              {item.price ? `₹${item.price}` : "Ask price"}
-            </Text>
+            {item.price ? (
+              <Text fontWeight="bold" flexShrink={0}>₹{item.price}</Text>
+            ) : (
+              <Button asChild size="xs" variant="outline" flexShrink={0}>
+                <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                  Ask price
+                </a>
+              </Button>
+            )}
           </HStack>
           <HStack gap={2} wrap="wrap">
-            <Badge variant="subtle">{item.condition.replace("_", " ")}</Badge>
+            {item.condition === "new" ? (
+              <Badge variant="subtle" color="green.500">
+                New
+              </Badge>
+            ) : (
+              <Badge variant="subtle">{item.condition.replace("_", " ")}</Badge>
+            )}
             <Badge variant="subtle">
               <FiMapPin /> {formatDistance(item.distanceM)}
             </Badge>
@@ -104,10 +116,7 @@ export const ResultCard = ({
           <HStack gap={2} wrap="wrap" mt="auto">
             {!hideShopLink && (
               <Button asChild size="sm" variant="outline">
-                <Link
-                  to={`/shops/${item.shop}`}
-                  state={{ from: location }}
-                >
+                <Link to={`/shops/${item.shop}`} state={{ from: location }}>
                   <FiShoppingBag /> View shop
                 </Link>
               </Button>

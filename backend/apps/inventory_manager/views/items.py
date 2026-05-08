@@ -94,6 +94,7 @@ class InventoryItemViewSet(ViewSet):
             )
 
         item = serializer.save(
+            user=request.user,
             shop=shop,
             stale_at=timezone.now() + timedelta(days=REFRESH_DAYS),
         )
@@ -207,15 +208,14 @@ class InventoryItemViewSet(ViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        item.status = InventoryItem.Status.HIDDEN
-        item.save(update_fields=["status", "updated_at"])
+        item.delete()
 
         return Response(
             {
                 "meta": {
                     "status_code": status.HTTP_200_OK,
                     "success": True,
-                    "message": "Item hidden successfully.",
+                    "message": "Item deleted successfully.",
                 },
                 "data": None,
             },
@@ -257,7 +257,7 @@ class InventoryItemViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["post"], url_path="presign-image")
+    @action(detail=True, methods=["post"], url_path="images/presign")
     def presign_image(self, request, pk=None):
         item = self._get_item_or_404(request, pk)
 
@@ -306,7 +306,7 @@ class InventoryItemViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["post"], url_path="confirm-image")
+    @action(detail=True, methods=["post"], url_path="images/confirm")
     def confirm_image(self, request, pk=None):
         item = self._get_item_or_404(request, pk)
 
@@ -368,22 +368,39 @@ class InventoryItemViewSet(ViewSet):
 
     @action(
         detail=True,
-        methods=["delete"],
-        url_path=r"images/(?P<image_id>[^/.]+)",
+        methods=["patch"],
+        url_path="images/reorder",
     )
-    def delete_image(self, request, pk=None, image_id=None):
+    def reorder_images(self, request, pk=None):
         item = self._get_item_or_404(request, pk)
 
         if item is None:
             return Response(
-                {
-                    "meta": {
-                        "status_code": status.HTTP_404_NOT_FOUND,
-                        "success": False,
-                        "message": "Item not found.",
-                    },
-                    "data": None,
-                },
+                {"meta": {"status_code": status.HTTP_404_NOT_FOUND, "success": False, "message": "Item not found."}, "data": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        image_ids = request.data.get("image_ids", [])
+
+        for position, image_id in enumerate(image_ids):
+            item.images.filter(pk=image_id).update(position=position)
+
+        return Response(
+            {"meta": {"status_code": status.HTTP_200_OK, "success": True, "message": "Images reordered."}, "data": None},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["patch", "delete"],
+        url_path=r"images/(?P<image_id>[0-9a-f-]+)",
+    )
+    def image_detail(self, request, pk=None, image_id=None):
+        item = self._get_item_or_404(request, pk)
+
+        if item is None:
+            return Response(
+                {"meta": {"status_code": status.HTTP_404_NOT_FOUND, "success": False, "message": "Item not found."}, "data": None},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -391,29 +408,30 @@ class InventoryItemViewSet(ViewSet):
             image = item.images.get(pk=image_id)
         except ItemImage.DoesNotExist:
             return Response(
-                {
-                    "meta": {
-                        "status_code": status.HTTP_404_NOT_FOUND,
-                        "success": False,
-                        "message": "Image not found.",
-                    },
-                    "data": None,
-                },
+                {"meta": {"status_code": status.HTTP_404_NOT_FOUND, "success": False, "message": "Image not found."}, "data": None},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        s3_key = image.s3_key
-        image.delete()
-        image_service.delete_object(s3_key)
+        if request.method == "DELETE":
+            s3_key = image.s3_key
+            image.delete()
+            image_service.delete_object(s3_key)
+            return Response(
+                {"meta": {"status_code": status.HTTP_200_OK, "success": True, "message": "Image deleted."}, "data": None},
+                status=status.HTTP_200_OK,
+            )
 
+        if request.data.get("is_primary"):
+            item.images.update(is_primary=False)
+            image.is_primary = True
+            image.save(update_fields=["is_primary"])
+
+        if "position" in request.data:
+            image.position = request.data["position"]
+            image.save(update_fields=["position"])
+
+        out = ItemImageSerializer(image)
         return Response(
-            {
-                "meta": {
-                    "status_code": status.HTTP_200_OK,
-                    "success": True,
-                    "message": "Image deleted successfully.",
-                },
-                "data": None,
-            },
+            {"meta": {"status_code": status.HTTP_200_OK, "success": True, "message": "Image updated."}, "data": out.data},
             status=status.HTTP_200_OK,
         )

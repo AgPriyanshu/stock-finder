@@ -8,14 +8,25 @@ import {
   HStack,
   VStack,
   Text,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
+import { useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { FiImage, FiX } from "react-icons/fi";
 import { useCategories, useCreateItem, useUpdateItem } from "api/stock-finder";
 import type { SfItem } from "api/stock-finder";
+import api from "api/api";
+import type { ApiResponse } from "api/types";
 import { ImageUploader } from "./image-uploader";
+import {
+  compressImage,
+  getImageDimensions,
+} from "../../services/compress-image";
+import { toaster } from "design-system/toaster/toaster-instance";
+
+const MIN_DIMENSION = 400;
 
 const itemSchema = z.object({
   name: z
@@ -31,10 +42,51 @@ const itemSchema = z.object({
 
 type ItemFormValues = z.infer<typeof itemSchema>;
 
+interface PendingFile {
+  id: string;
+  file: File;
+  preview: string;
+}
+
 interface ItemFormProps {
   initialData?: SfItem;
   onClose: () => void;
 }
+
+const uploadFilesToItem = async (itemId: string, files: PendingFile[]) => {
+  for (let i = 0; i < files.length; i++) {
+    const { file } = files[i];
+    try {
+      const original = await getImageDimensions(file);
+      if (original.width < MIN_DIMENSION || original.height < MIN_DIMENSION) {
+        toaster.error({ title: `${file.name} skipped — min 400×400 px` });
+        continue;
+      }
+      const compressed = await compressImage(file);
+
+      const presignRes = await api.post<ApiResponse<{ url: string; key: string; headers: Record<string, string> }>>(
+        `/items/${itemId}/images/presign/`,
+        { contentType: compressed.contentType }
+      );
+      const { url, key, headers } = presignRes.data.data;
+
+      await fetch(url, {
+        method: "PUT",
+        body: compressed.blob,
+        headers: { ...headers, "Content-Type": compressed.blob.type || "image/jpeg" },
+      });
+
+      await api.post(`/items/${itemId}/images/confirm/`, {
+        key,
+        width: compressed.width,
+        height: compressed.height,
+        isPrimary: i === 0,
+      });
+    } catch {
+      toaster.error({ title: `Failed to upload ${file.name}` });
+    }
+  }
+};
 
 export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
   const { data: categories = [] } = useCategories();
@@ -43,15 +95,9 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
 
   const isEditing = !!initialData;
   const [activeItemId, setActiveItemId] = useState(initialData?.id);
-  const [imageState, setImageState] = useState({
-    count: initialData?.images.length ?? 0,
-    hasPrimary: initialData?.images.some((image) => image.isPrimary) ?? false,
-  });
-  const canFinish = imageState.count > 0 && imageState.hasPrimary;
-  const handleImagesChange = useCallback(
-    (state: { count: number; hasPrimary: boolean }) => setImageState(state),
-    []
-  );
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [isUploadingPending, setIsUploadingPending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -70,50 +116,135 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
     },
   });
 
+  const handlePendingFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    const slots = 5 - pendingFiles.length;
+    const added: PendingFile[] = files.slice(0, slots).map((f) => ({
+      id: crypto.randomUUID(),
+      file: f,
+      preview: URL.createObjectURL(f),
+    }));
+    setPendingFiles((prev) => [...prev, ...added]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePending = (id: string) => {
+    setPendingFiles((prev) => {
+      const removed = prev.find((f) => f.id === id);
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return prev.filter((f) => f.id !== id);
+    });
+  };
+
   const onSubmit = async (data: ItemFormValues) => {
     try {
-      const payload = {
-        ...data,
-        price: data.price || null,
-      };
+      const payload = { ...data, price: data.price || null };
 
       if (activeItemId) {
-        await updateItem.mutateAsync({
-          id: activeItemId,
-          ...payload,
-        });
+        await updateItem.mutateAsync({ id: activeItemId, ...payload });
         onClose();
       } else {
         const created = await createItem.mutateAsync(payload);
         setActiveItemId(created.id);
+
+        if (pendingFiles.length > 0) {
+          setIsUploadingPending(true);
+          await uploadFilesToItem(created.id, pendingFiles);
+          setIsUploadingPending(false);
+        }
+
+        onClose();
       }
     } catch (error) {
       console.error("Failed to save item:", error);
     }
   };
 
+  const isBusy = isSubmitting || isUploadingPending;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <VStack gap={4} align="stretch">
         {activeItemId ? (
-          <ImageUploader
-            itemId={activeItemId}
-            onImagesChange={handleImagesChange}
-          />
+          <ImageUploader itemId={activeItemId} />
         ) : (
-          <Box
-            borderWidth="2px"
-            borderStyle="dashed"
-            borderColor="border.default"
-            borderRadius="md"
-            px={4}
-            py={6}
-            textAlign="center"
-            opacity={0.5}
-          >
-            <Text fontSize="sm" color="fg.muted">
-              Images can be added after saving item details
-            </Text>
+          <Box>
+            <input
+              ref={fileInputRef}
+              hidden
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handlePendingFiles(e.target.files)}
+            />
+            <Box
+              p={4}
+              border="1px dashed"
+              borderColor="border.default"
+              borderRadius="md"
+              bg="bg.muted"
+              textAlign="center"
+            >
+              <Text fontSize="sm" color="fg.muted" mb={2}>
+                Add up to 5 product photos.
+              </Text>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={pendingFiles.length >= 5}
+                type="button"
+              >
+                <FiImage /> Choose file
+              </Button>
+            </Box>
+
+            {pendingFiles.length > 0 && (
+              <SimpleGrid columns={3} gap={2} mt={3}>
+                {pendingFiles.map((pf, i) => (
+                  <Box
+                    key={pf.id}
+                    position="relative"
+                    borderRadius="md"
+                    overflow="hidden"
+                  >
+                    <img
+                      src={pf.preview}
+                      style={{ width: "100%", height: "96px", objectFit: "cover", display: "block" }}
+                      alt={pf.file.name}
+                    />
+                    {i === 0 && (
+                      <Box
+                        position="absolute"
+                        top={1}
+                        left={1}
+                        bg="green.500"
+                        color="white"
+                        fontSize="2xs"
+                        px={1}
+                        borderRadius="sm"
+                      >
+                        Primary
+                      </Box>
+                    )}
+                    <Button
+                      position="absolute"
+                      top={1}
+                      right={1}
+                      size="2xs"
+                      variant="ghost"
+                      color="white"
+                      bg="blackAlpha.600"
+                      onClick={() => removePending(pf.id)}
+                      type="button"
+                    >
+                      <FiX />
+                    </Button>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            )}
           </Box>
         )}
 
@@ -214,26 +345,13 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
         </Field.Root>
 
         <HStack justify="flex-end" pt={4}>
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+          <Button variant="ghost" onClick={onClose} disabled={isBusy}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            loading={isSubmitting}
-            disabled={!!activeItemId && !canFinish}
-          >
-            {activeItemId
-              ? isEditing
-                ? "Save changes"
-                : "Finish"
-              : "Create item details"}
+          <Button type="submit" loading={isBusy}>
+            {isEditing ? "Save changes" : "Add item"}
           </Button>
         </HStack>
-        {activeItemId && !canFinish && (
-          <Text color="intent.danger" fontSize="sm" textAlign="right">
-            Add at least one image and mark a primary image before saving.
-          </Text>
-        )}
       </VStack>
     </form>
   );
