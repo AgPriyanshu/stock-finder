@@ -228,7 +228,7 @@ def deploy_all(computed: Path) -> None:
     helm("apps-shared", "shared", "--namespace", "default")
     print("✅ Shared components installed")
 
-    # 11. Backend (web + worker + beat)
+    # 11. Backend (web + worker)
     step("Installing Backend Application")
     helm("backend", "backend", "--namespace", "default", values=computed)
     print("✅ Backend Application installed")
@@ -270,7 +270,7 @@ def main() -> None:
     print(f"\n  ✅ Minikube  ({minikube_cpus} CPUs, {minikube_mem}MB RAM)")
     print("  ✅ Gateway API CRDs + NGINX Gateway Fabric")
     print("  ✅ PostgreSQL · Redis · SeaweedFS")
-    print("  ✅ Backend (web + worker + beat) · Frontend · Cloudflare Tunnel")
+    print("  ✅ Backend (web + worker) · Frontend · Cloudflare Tunnel")
     print("\nTo check status:")
     print("  kubectl get pods -A")
     print("  kubectl get gateway -n gateway-ns")

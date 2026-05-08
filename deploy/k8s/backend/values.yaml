@@ -30,6 +30,9 @@ workerResources:
     cpu: 300m
     memory: 256Mi
 
+beat:
+  enabled: false
+
 beatResources:
   requests:
     cpu: 50m
