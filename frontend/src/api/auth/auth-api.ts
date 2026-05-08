@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import type { ApiResponse } from "api/types";
 import type { AxiosResponse } from "axios";
-import { setAccessToken } from "../../shared/local-storage/token";
+import { setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
 import type { LoginCredentials, LoginResponse } from "./types";
 
@@ -15,7 +15,7 @@ export const useLogin = () => {
     },
     onSuccess: (response: AxiosResponse<ApiResponse<LoginResponse>>) => {
       const data = response.data.data;
-      setAccessToken(data.token);
+      setOwnerToken(data.token);
     },
   });
 };

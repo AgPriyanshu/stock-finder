@@ -1,5 +1,6 @@
 import jwt
 from django.apps import apps
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
@@ -8,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..serializers import (
+    LoginSerializer,
     OTPRequestSerializer,
     OTPVerifySerializer,
     RefreshTokenSerializer,
@@ -21,6 +23,37 @@ def _client_ip(request):
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.META.get("REMOTE_ADDR")
+
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        username = serializer.validated_data["username"]
+        password = serializer.validated_data["password"]
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is None:
+            raise AuthenticationFailed("Invalid credentials.")
+
+        Shop = apps.get_model("shop_manager", "Shop")
+        has_shop = Shop.objects.filter(user=user).exists()
+
+        token = issue_token(user)
+
+        return Response(
+            {
+                "token": token["token"],
+                "expires_at": token["expires_at"],
+                "user": {"id": user.id, "username": user.username},
+                "has_shop": has_shop,
+            }
+        )
 
 
 class OTPRequestView(APIView):

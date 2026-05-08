@@ -5,5 +5,7 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   token: string;
-  isStaff: boolean;
+  expiresAt: string;
+  user: { id: number; username: string };
+  hasShop: boolean;
 }

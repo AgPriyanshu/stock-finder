@@ -31,3 +31,8 @@ class OTPVerifySerializer(serializers.Serializer):
 
 class RefreshTokenSerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
