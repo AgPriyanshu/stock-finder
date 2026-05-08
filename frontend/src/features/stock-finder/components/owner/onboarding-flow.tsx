@@ -18,7 +18,13 @@ import { PhoneStep } from "./steps/phone-step";
 import { ShopDetailsStep } from "./steps/shop-details-step";
 import { BrandHeading } from "../brand-heading";
 
-const StepBar = ({ labels, current }: { labels: string[]; current: number }) => (
+const StepBar = ({
+  labels,
+  current,
+}: {
+  labels: string[];
+  current: number;
+}) => (
   <Flex className="ds-step-bar" gap={2} w="full" maxW="sm" mx="auto">
     {labels.map((label, i) => (
       <Box key={label} flex={1} textAlign="center">
@@ -31,7 +37,7 @@ const StepBar = ({ labels, current }: { labels: string[]; current: number }) => 
         />
         <Text
           fontSize="xs"
-          color={i <= current ? "intent.primary" : "text.muted"}
+          color={i <= current ? "text.primary" : "text.muted"}
         >
           {label}
         </Text>
@@ -43,7 +49,8 @@ const StepBar = ({ labels, current }: { labels: string[]; current: number }) => 
 export const OnboardingFlow = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const prefilledPhone = (location.state as { phone?: string } | null)?.phone ?? "";
+  const prefilledPhone =
+    (location.state as { phone?: string } | null)?.phone ?? "";
   const { data: shop, isLoading } = useMyShop();
   const state = useOnboardingState(prefilledPhone);
 
@@ -61,10 +68,14 @@ export const OnboardingFlow = () => {
   }
 
   const phoneVerified = !!prefilledPhone;
-  const stepLabels = phoneVerified ? ["Shop details", "Location"] : ["Phone", "Shop details", "Location"];
+  const stepLabels = phoneVerified
+    ? ["Shop details", "Location"]
+    : ["Phone", "Shop details", "Location"];
   const stepIndex = phoneVerified
-    ? { "shop-details": 0, location: 1 }[state.step as "shop-details" | "location"] ?? 0
-    : { phone: 0, "shop-details": 1, location: 2 }[state.step] ?? 0;
+    ? ({ "shop-details": 0, location: 1 }[
+        state.step as "shop-details" | "location"
+      ] ?? 0)
+    : ({ phone: 0, "shop-details": 1, location: 2 }[state.step] ?? 0);
 
   const handleLogout = () => {
     clearOwnerToken();
@@ -74,32 +85,45 @@ export const OnboardingFlow = () => {
   };
 
   return (
-    <Box className="onboarding-flow" w="full" minH="100vh" px={4} py={8}>
-      <Flex justify="space-between" align="center" mb={8} maxW="sm" mx="auto">
+    <Box
+      className="onboarding-flow"
+      w="full"
+      minH="100vh"
+      display="flex"
+      flexDirection="column"
+      px={4}
+    >
+      <Flex
+        justify="space-between"
+        align="center"
+        py={4}
+        maxW="sm"
+        mx="auto"
+        w="full"
+      >
         <BrandHeading size="md" />
         <Button variant="ghost" size="sm" onClick={handleLogout}>
           Logout
         </Button>
       </Flex>
 
-      <VStack gap={8} w="full">
-        <StepBar labels={stepLabels} current={stepIndex} />
-
-        {state.step === "phone" && (
-          <PhoneStep onVerified={state.advanceToShopDetails} />
-        )}
-
-        {state.step === "shop-details" && (
-          <ShopDetailsStep
-            defaultPhone={state.phone}
-            onNext={state.advanceToLocation}
-          />
-        )}
-
-        {state.step === "location" && (
-          <LocationStep shopDetails={state.shopDetails} />
-        )}
-      </VStack>
+      <Flex flex={1} py={8}>
+        <VStack mt={"2rem"} gap={8} w="full">
+          <StepBar labels={stepLabels} current={stepIndex} />
+          {state.step === "phone" && (
+            <PhoneStep onVerified={state.advanceToShopDetails} />
+          )}
+          {state.step === "shop-details" && (
+            <ShopDetailsStep
+              defaultPhone={state.phone}
+              onNext={state.advanceToLocation}
+            />
+          )}
+          {state.step === "location" && (
+            <LocationStep shopDetails={state.shopDetails} />
+          )}
+        </VStack>
+      </Flex>
     </Box>
   );
 };

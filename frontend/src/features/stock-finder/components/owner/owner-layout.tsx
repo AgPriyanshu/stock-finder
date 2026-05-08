@@ -58,7 +58,7 @@ export const OwnerLayout = () => {
                     variant="ghost"
                     size="sm"
                     color={isActive ? "fg" : "fg.muted"}
-                    fontWeight={isActive ? "semibold" : "normal"}
+                    fontWeight="medium"
                     bg={isActive ? "bg.muted" : "transparent"}
                   >
                     <Link to={to}>

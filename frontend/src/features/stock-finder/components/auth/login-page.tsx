@@ -105,7 +105,10 @@ export const LoginPage = () => {
         if (res.data.data.hasShop) {
           navigate(RoutePath.OwnerInventory, { replace: true });
         } else {
-          navigate(RoutePath.OwnerOnboarding, { replace: true });
+          navigate(RoutePath.OwnerOnboarding, {
+            replace: true,
+            state: { phone: res.data.data.user.username },
+          });
         }
       },
       onError: (err: unknown) => {
