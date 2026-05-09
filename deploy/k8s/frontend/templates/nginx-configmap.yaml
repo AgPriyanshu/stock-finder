@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-nginx-config
+  namespace: {{ .Release.Namespace }}
+data:
+  default.conf: |
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name localhost;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        gzip on;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+        # Content-hashed assets — safe to cache for 1 year.
+        location /assets/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # index.html — must revalidate on every request so new deployments are
+        # picked up without a hard refresh.
+        location = /index.html {
+            add_header Cache-Control "no-cache, must-revalidate";
+        }
+
+        # SPA fallback.
+        location / {
+            try_files $uri $uri/ /index.html;
+            add_header Cache-Control "no-cache, must-revalidate";
+        }
+    }
