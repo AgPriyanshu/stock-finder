@@ -338,8 +338,8 @@ export const ResultsMap = ({
         </Box>
       )}
 
-      {/* Custom map controls — bottom right */}
-      <VStack position="absolute" bottom={4} right={3} gap={1}>
+      {/* Custom map controls — top right */}
+      <VStack position="absolute" top={4} right={3} gap={1}>
         <IconButton
           size="sm"
           bg="white"

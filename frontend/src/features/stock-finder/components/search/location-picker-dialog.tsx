@@ -3,13 +3,14 @@ import {
   Button,
   CloseButton,
   Dialog,
+  IconButton,
   Input,
   InputGroup,
   Portal,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { FiSearch } from "react-icons/fi";
+import { FiCrosshair, FiSearch } from "react-icons/fi";
 import { MapView } from "shared/components/map-view";
 import type { MapLibreMap } from "shared/components/map-view";
 
@@ -125,6 +126,19 @@ export const LocationPickerDialog = ({
     setSearchOpen(false);
   };
 
+  const handleGoToGps = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        mapRef.current?.flyTo({
+          center: [pos.coords.longitude, pos.coords.latitude],
+          zoom: 15,
+        });
+      },
+      () => {}
+    );
+  };
+
   const handleConfirm = () => {
     const map = mapRef.current;
     if (!map) return;
@@ -217,6 +231,22 @@ export const LocationPickerDialog = ({
                   />
                 )}
                 <CrosshairPin />
+                <IconButton
+                  position="absolute"
+                  top={2}
+                  right={2}
+                  size="sm"
+                  bg="white"
+                  color="gray.800"
+                  borderRadius="md"
+                  shadow="md"
+                  aria-label="Use my GPS location"
+                  onClick={handleGoToGps}
+                  _hover={{ bg: "gray.100" }}
+                  zIndex={1}
+                >
+                  <FiCrosshair />
+                </IconButton>
               </Box>
             </Dialog.Body>
             <Dialog.Footer>

@@ -155,7 +155,9 @@ export const SearchPage = () => {
   const locationReady =
     !buyerLocation.isLoading &&
     (buyerLocation.lat === null || params.lat !== undefined);
-  const searchQuery = useSearchItems(params, { enabled: locationReady });
+  const searchQuery = useSearchItems(params, {
+    enabled: locationReady && !!params.q,
+  });
   const items = flattenResults(searchQuery.data?.pages);
 
   const prevLoadingRef = useRef(false);

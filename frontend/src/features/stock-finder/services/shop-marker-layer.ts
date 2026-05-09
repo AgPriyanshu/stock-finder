@@ -5,6 +5,7 @@ const SOURCE_ID = "dead-stock-shops";
 const CLUSTERS_ID = "dead-stock-shop-clusters";
 const CLUSTER_COUNT_ID = "dead-stock-shop-cluster-count";
 const POINTS_ID = "dead-stock-shop-points";
+const LABELS_ID = "dead-stock-shop-labels";
 const PIN_IMAGE_ID = "shop-pin";
 
 export const shopMarkerLayerIds = {
@@ -12,6 +13,7 @@ export const shopMarkerLayerIds = {
   clusters: CLUSTERS_ID,
   clusterCount: CLUSTER_COUNT_ID,
   points: POINTS_ID,
+  labels: LABELS_ID,
 };
 
 export const toShopFeatureCollection = (items: DsSearchItem[]) => {
@@ -31,6 +33,7 @@ export const toShopFeatureCollection = (items: DsSearchItem[]) => {
           itemId: item.id,
           shopId: item.shop,
           title: item.shopName,
+          distanceM: item.distanceM,
         },
         geometry: {
           type: "Point" as const,
@@ -126,6 +129,49 @@ export const mountShopMarkers = async (
       "icon-size": 1.7,
       "icon-anchor": "bottom",
       "icon-allow-overlap": true,
+    },
+  });
+
+  map.addLayer({
+    id: LABELS_ID,
+    type: "symbol",
+    source: SOURCE_ID,
+    filter: ["!", ["has", "point_count"]],
+    layout: {
+      "text-field": [
+        "format",
+        ["get", "title"],
+        { "font-scale": 0.85 },
+        "\n",
+        {},
+        [
+          "case",
+          ["==", ["get", "distanceM"], null],
+          "",
+          [
+            "case",
+            [">=", ["get", "distanceM"], 1000],
+            [
+              "concat",
+              ["to-string", ["round", ["/", ["get", "distanceM"], 1000]]],
+              " km",
+            ],
+            ["concat", ["to-string", ["round", ["get", "distanceM"]]], " m"],
+          ],
+        ],
+        { "font-scale": 0.75, "text-color": "#6b7280" },
+      ],
+      "text-anchor": "top",
+      "text-offset": [0, 0.2],
+      "text-size": 12,
+      "text-allow-overlap": false,
+      "text-optional": true,
+      "text-max-width": 10,
+    },
+    paint: {
+      "text-color": "#111827",
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 2,
     },
   });
 };

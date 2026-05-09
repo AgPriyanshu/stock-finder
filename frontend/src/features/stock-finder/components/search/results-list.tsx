@@ -48,6 +48,14 @@ export const ResultsList = ({
     );
   }
 
+  if (!query.isFetched && items.length === 0) {
+    return (
+      <Center py={14}>
+        <Text color="fg.muted">Search for items near you</Text>
+      </Center>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <Center py={14} flexDir="column" gap={3} bg="bg.muted" borderRadius="md">

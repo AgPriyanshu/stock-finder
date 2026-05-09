@@ -265,12 +265,12 @@ export const LoginPage = () => {
         ── end OTP login ──────────────────────────────────────────────────── */}
 
         <Text fontSize="sm" color="fg.muted" textAlign="center">
-          New here?{" "}
+          <Text>New here?</Text>
           <Button
             variant="plain"
             size="sm"
             color="fg"
-            textDecoration="underline"
+            textDecor={"underline"}
             p={0}
             h="auto"
             onClick={() => setSignupOpen(true)}
@@ -286,7 +286,10 @@ export const LoginPage = () => {
         </Button>
       </VStack>
 
-      <ShopSignupDialog isOpen={signupOpen} onClose={() => setSignupOpen(false)} />
+      <ShopSignupDialog
+        isOpen={signupOpen}
+        onClose={() => setSignupOpen(false)}
+      />
     </Box>
   );
 };
