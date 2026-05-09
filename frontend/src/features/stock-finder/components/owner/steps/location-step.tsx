@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useCreateShop } from "api/stock-finder";
 import { RoutePath } from "app/router/constants";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router";
 import { MapView } from "shared/components/map-view";
