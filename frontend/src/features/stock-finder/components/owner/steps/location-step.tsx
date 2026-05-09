@@ -12,12 +12,11 @@ import {
 } from "@chakra-ui/react";
 import { useCreateShop } from "api/stock-finder";
 import { RoutePath } from "app/router/constants";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router";
-import { DS_MAP_STYLE } from "../../../services/map-style";
+import { MapView } from "shared/components/map-view";
+import type { MapLibreMap } from "shared/components/map-view";
 import type { ShopDetails } from "../../../hooks/use-onboarding-state";
 
 const INDIA_CENTER: [number, number] = [78.9629, 20.5937];
@@ -37,8 +36,7 @@ interface LocationStepProps {
 
 export const LocationStep = ({ shopDetails }: LocationStepProps) => {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { mutate: createShop, isPending } = useCreateShop();
 
@@ -48,34 +46,6 @@ export const LocationStep = ({ shopDetails }: LocationStepProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: DS_MAP_STYLE,
-      center: INDIA_CENTER,
-      zoom: INDIA_ZOOM,
-      attributionControl: false,
-    });
-
-    mapRef.current = map;
-
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => {
-        map.flyTo({
-          center: [pos.coords.longitude, pos.coords.latitude],
-          zoom: PIN_ZOOM,
-        });
-      },
-      () => {},
-    );
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
 
   const searchAddress = (value: string) => {
     setQuery(value);
@@ -240,9 +210,24 @@ export const LocationStep = ({ shopDetails }: LocationStepProps) => {
         borderRadius="xl"
         overflow="hidden"
       >
-        <Box
-          ref={containerRef}
-          className="location-picker-map"
+        <MapView
+          initialCenter={INDIA_CENTER}
+          initialZoom={INDIA_ZOOM}
+          onMapCreated={(map) => {
+            mapRef.current = map;
+            navigator.geolocation?.getCurrentPosition(
+              (pos) => {
+                map.flyTo({
+                  center: [pos.coords.longitude, pos.coords.latitude],
+                  zoom: PIN_ZOOM,
+                });
+              },
+              () => {},
+            );
+            return () => {
+              mapRef.current = null;
+            };
+          }}
           w="full"
           h="full"
         />

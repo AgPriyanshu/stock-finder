@@ -1,6 +1,5 @@
 import { Box, IconButton, Text, VStack } from "@chakra-ui/react";
 import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
 import type { SfSearchItem } from "api/stock-finder";
@@ -8,7 +7,8 @@ import {
   mountShopMarkers,
   shopMarkerLayerIds,
 } from "../../services/shop-marker-layer";
-import { DS_MAP_STYLE } from "../../services/map-style";
+import { MapView } from "shared/components/map-view";
+import type { MapLibreMap } from "shared/components/map-view";
 import { MapItemCarousel } from "./map-item-carousel";
 
 interface ResultsMapProps {
@@ -64,8 +64,7 @@ export const ResultsMap = ({
     [items]
   );
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
   const locationMarkerRef = useRef<maplibregl.Marker | null>(null);
   const itemsRef = useRef(sortedItems);
   const initialLatRef = useRef(lat);
@@ -77,19 +76,7 @@ export const ResultsMap = ({
     itemsRef.current = sortedItems;
   }, [sortedItems]);
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: DS_MAP_STYLE,
-      center: [
-        initialLngRef.current ?? 77.209,
-        initialLatRef.current ?? 28.6139,
-      ],
-      zoom: initialLatRef.current && initialLngRef.current ? 13 : 4,
-      attributionControl: false,
-    });
+  const handleMapCreated = useCallback((map: MapLibreMap) => {
     mapRef.current = map;
 
     map.on("load", () => {
@@ -141,9 +128,10 @@ export const ResultsMap = ({
     return () => {
       locationMarkerRef.current?.remove();
       locationMarkerRef.current = null;
-      map.remove();
       mapRef.current = null;
     };
+  // Stable refs and setState — safe with empty deps.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -317,7 +305,16 @@ export const ResultsMap = ({
 
   return (
     <Box className="results-map" position="relative" h="full">
-      <Box ref={containerRef} h="full" overflow="hidden" />
+      <MapView
+        initialCenter={[
+          initialLngRef.current ?? 77.209,
+          initialLatRef.current ?? 28.6139,
+        ]}
+        initialZoom={initialLatRef.current && initialLngRef.current ? 13 : 4}
+        onMapCreated={handleMapCreated}
+        h="full"
+        overflow="hidden"
+      />
 
       {/* Result count badge — top left, only when an active query is present */}
       {hasQuery && resultCount > 0 && (

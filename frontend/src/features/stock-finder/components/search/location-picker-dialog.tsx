@@ -8,11 +8,10 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { DS_MAP_STYLE } from "../../services/map-style";
 import { useEffect, useRef, useState } from "react";
 import { FiSearch } from "react-icons/fi";
+import { MapView } from "shared/components/map-view";
+import type { MapLibreMap } from "shared/components/map-view";
 
 interface LocationPickerDialogProps {
   isOpen: boolean;
@@ -64,8 +63,7 @@ export const LocationPickerDialog = ({
   onClose,
   onConfirm,
 }: LocationPickerDialogProps) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
   const searchTimeoutRef = useRef<number | undefined>(undefined);
 
   const [addressQuery, setAddressQuery] = useState("");
@@ -82,35 +80,6 @@ export const LocationPickerDialog = ({
     }, 0);
     return () => window.clearTimeout(id);
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      mapRef.current?.remove();
-      mapRef.current = null;
-      return;
-    }
-
-    // Wait one tick for the Portal to mount the container in the DOM.
-    const timer = window.setTimeout(() => {
-      if (!containerRef.current || mapRef.current) return;
-
-      const map = new maplibregl.Map({
-        container: containerRef.current,
-        style: DS_MAP_STYLE,
-        center: [currentLng ?? 77.209, currentLat ?? 28.6139],
-        zoom: 13,
-      });
-      mapRef.current = map;
-
-      map.on("load", () => map.resize());
-    }, 50);
-
-    return () => {
-      window.clearTimeout(timer);
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-  }, [isOpen, currentLat, currentLng]);
 
   // Close search dropdown when clicking outside.
   useEffect(() => {
@@ -232,7 +201,21 @@ export const LocationPickerDialog = ({
               </Text>
 
               <Box position="relative" h="340px">
-                <Box ref={containerRef} w="full" h="full" />
+                {isOpen && (
+                  <MapView
+                    initialCenter={[currentLng ?? 77.209, currentLat ?? 28.6139]}
+                    initialZoom={13}
+                    onMapCreated={(map) => {
+                      mapRef.current = map;
+                      map.on("load", () => map.resize());
+                      return () => {
+                        mapRef.current = null;
+                      };
+                    }}
+                    w="full"
+                    h="full"
+                  />
+                )}
                 <CrosshairPin />
               </Box>
             </Dialog.Body>
