@@ -12,6 +12,10 @@ WORKDIR /app
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
+# Accept Vite public env vars as build args
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
