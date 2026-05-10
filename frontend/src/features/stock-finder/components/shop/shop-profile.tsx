@@ -98,7 +98,7 @@ export const ShopProfile = () => {
   };
 
   return (
-    <VStack align="stretch" gap={5} px={4} py={5}>
+    <VStack align="stretch" gap={5} px={{ base: 3, md: 4 }} py={{ base: 4, md: 5 }}>
       {location.state?.from && (
         <Button asChild variant="ghost" alignSelf="start" size="sm">
           <Link
@@ -125,7 +125,7 @@ export const ShopProfile = () => {
           <Spinner />
         </Center>
       ) : (
-        <SimpleGrid columns={{ base: 1, xl: 2 }} gap={4}>
+        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
           {items.map((item) => {
             const recent = getRecentLead(item.id);
             return (

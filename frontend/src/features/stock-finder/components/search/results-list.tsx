@@ -1,4 +1,11 @@
-import { Button, Center, Spinner, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Center,
+  SimpleGrid,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import type { SfSearchItem } from "api/stock-finder";
 import type { InfiniteData } from "@tanstack/react-query";
@@ -66,16 +73,18 @@ export const ResultsList = ({
   }
 
   return (
-    <VStack align="stretch" gap={3}>
-      {items.map((item) => (
-        <ResultCard key={item.id} item={item} />
-      ))}
+    <Box>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={3}>
+        {items.map((item) => (
+          <ResultCard key={item.id} item={item} />
+        ))}
+      </SimpleGrid>
       <div ref={sentinelRef} />
       {query.isFetchingNextPage && (
         <Center py={4}>
           <Spinner size="sm" />
         </Center>
       )}
-    </VStack>
+    </Box>
   );
 };

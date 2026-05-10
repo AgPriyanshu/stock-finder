@@ -130,13 +130,14 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
         bg="bg.panel"
         w="full"
       >
-        <HStack gap={4} align="start" justify="space-between">
-          <HStack gap={4} align="start">
+        <HStack gap={3} align="start" justify="space-between">
+          <HStack gap={3} align="start" flex={1} minW={0}>
             <Box
-              boxSize="60px"
+              boxSize={{ base: "56px", sm: "60px" }}
               borderRadius="md"
               overflow="hidden"
               bg="bg.muted"
+              flexShrink={0}
             >
               {primaryImage ? (
                 <Image
@@ -159,7 +160,7 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
                 </Box>
               )}
             </Box>
-            <VStack align="start" gap={1}>
+            <VStack align="start" gap={1} minW={0} flex={1}>
               <Text fontWeight="medium" lineClamp={1}>
                 {item.name}
               </Text>

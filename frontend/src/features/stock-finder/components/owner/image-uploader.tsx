@@ -313,7 +313,7 @@ export const ImageUploader = ({
             items={images.map((image) => image.id)}
             strategy={rectSortingStrategy}
           >
-            <SimpleGrid columns={{ base: 2, sm: 3 }} gap={3}>
+            <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} gap={3}>
               {images.map((image) => (
                 <ImageThumbnail
                   key={image.id}

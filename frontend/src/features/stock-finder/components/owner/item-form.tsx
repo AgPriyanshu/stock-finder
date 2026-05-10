@@ -201,7 +201,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
             </Box>
 
             {pendingFiles.length > 0 && (
-              <SimpleGrid columns={3} gap={2} mt={3}>
+              <SimpleGrid columns={{ base: 2, sm: 3 }} gap={2} mt={3}>
                 {pendingFiles.map((pf, i) => (
                   <Box
                     key={pf.id}
@@ -256,8 +256,8 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           )}
         </Field.Root>
 
-        <HStack gap={4} align="start">
-          <Field.Root invalid={!!errors.quantity} flex={1}>
+        <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
+          <Field.Root invalid={!!errors.quantity}>
             <Field.Label>Quantity *</Field.Label>
             <Input
               type="number"
@@ -269,14 +269,14 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
             )}
           </Field.Root>
 
-          <Field.Root invalid={!!errors.price} flex={1}>
+          <Field.Root invalid={!!errors.price}>
             <Field.Label>Price (optional)</Field.Label>
             <Input {...register("price")} placeholder="0.00" />
             {errors.price && (
               <Field.ErrorText>{errors.price.message}</Field.ErrorText>
             )}
           </Field.Root>
-        </HStack>
+        </SimpleGrid>
 
         <Field.Root invalid={!!errors.category}>
           <Field.Label>Category *</Field.Label>
@@ -308,7 +308,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
             name="condition"
             control={control}
             render={({ field }) => (
-              <HStack gap={2}>
+              <HStack gap={2} wrap="wrap">
                 {(["new", "open_box", "used"] as const).map((cond) => (
                   <Button
                     key={cond}
@@ -316,6 +316,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
                     variant={field.value === cond ? "solid" : "outline"}
                     onClick={() => field.onChange(cond)}
                     type="button"
+                    flex={{ base: 1, sm: "initial" }}
                   >
                     {cond === "new"
                       ? "New"
@@ -344,11 +345,26 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           )}
         </Field.Root>
 
-        <HStack justify="flex-end" pt={4}>
-          <Button variant="ghost" onClick={onClose} disabled={isBusy}>
+        <HStack
+          justify={{ base: "stretch", sm: "flex-end" }}
+          pt={4}
+          gap={2}
+          flexDir={{ base: "column-reverse", sm: "row" }}
+          align="stretch"
+        >
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isBusy}
+            w={{ base: "full", sm: "auto" }}
+          >
             Cancel
           </Button>
-          <Button type="submit" loading={isBusy}>
+          <Button
+            type="submit"
+            loading={isBusy}
+            w={{ base: "full", sm: "auto" }}
+          >
             {isEditing ? "Save changes" : "Add item"}
           </Button>
         </HStack>

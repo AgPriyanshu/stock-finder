@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react";
 import type { SfSearchParams } from "api/stock-finder";
 import { useCategories, useSearchItems } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
@@ -185,28 +185,45 @@ export const SearchPage = () => {
         bg="surface.page"
         borderBottomWidth="1px"
         borderColor="border.default"
-        px={4}
-        py={3}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2, md: 3 }}
       >
-        <HStack justify="center" mb={3} mt={3}>
+        <HStack justify="center" mb={{ base: 2, md: 3 }} mt={{ base: 2, md: 3 }}>
           <Link to="/">
-            <BrandHeading size="3xl" />
+            <BrandHeading size="2xl" />
           </Link>
         </HStack>
-        <HStack justify="space-between" align="flex-start" wrap="wrap" gap={4}>
-          <VStack align="stretch" gap={2} maxW="2xl" flex={1}>
-            <HStack gap={3} align="center">
-              <Box flex={1}>
+        <HStack
+          justify="space-between"
+          align="flex-start"
+          wrap="wrap"
+          gap={{ base: 2, md: 4 }}
+        >
+          <VStack
+            align="stretch"
+            gap={2}
+            maxW="2xl"
+            flex={1}
+            minW={{ base: "full", md: "0" }}
+          >
+            <Flex
+              gap={{ base: 2, md: 3 }}
+              align="stretch"
+              direction={{ base: "column", sm: "row" }}
+            >
+              <Box flex={1} minW={0}>
                 <SearchBar
                   value={params.q || ""}
                   onChange={(q) => updateParams({ q: q || undefined })}
                 />
               </Box>
-              <ViewToggle
-                value={view}
-                onChange={(nextView) => updateParams({ view: nextView })}
-              />
-            </HStack>
+              <Box alignSelf={{ base: "stretch", sm: "center" }}>
+                <ViewToggle
+                  value={view}
+                  onChange={(nextView) => updateParams({ view: nextView })}
+                />
+              </Box>
+            </Flex>
             <FilterChips
               params={params}
               categories={categories}
@@ -216,7 +233,13 @@ export const SearchPage = () => {
             />
           </VStack>
 
-          <VStack gap={1} align="end" flexShrink={0} pt={1}>
+          <VStack
+            gap={1}
+            align={{ base: "stretch", md: "end" }}
+            flexShrink={0}
+            pt={1}
+            w={{ base: "full", md: "auto" }}
+          >
             {getOwnerToken() ? (
               <>
                 <Text fontSize="xs" color="fg.muted" whiteSpace="nowrap">

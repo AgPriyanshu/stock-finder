@@ -46,7 +46,7 @@ export const StaticShopMap = ({ shop }: StaticShopMapProps) => {
           marker.remove();
         };
       }}
-      h="220px"
+      h={{ base: "180px", md: "220px" }}
       borderRadius="md"
       overflow="hidden"
     />

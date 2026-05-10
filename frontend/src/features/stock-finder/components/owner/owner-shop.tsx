@@ -7,6 +7,7 @@ import {
   Heading,
   HStack,
   Input,
+  SimpleGrid,
   Spinner,
   Text,
   VStack,
@@ -74,9 +75,9 @@ export const OwnerShop = () => {
 
   return (
     <VStack className="owner-shop" align="stretch" gap={6}>
-      <HStack justify="space-between" align="center">
+      <HStack justify="space-between" align="center" gap={3}>
         <VStack align="start" gap={0}>
-          <Heading size="lg">Shop details</Heading>
+          <Heading size={{ base: "md", md: "lg" }}>Shop details</Heading>
           <Text color="text.secondary" fontSize="sm">
             This is how buyers see your shop.
           </Text>
@@ -97,11 +98,11 @@ export const OwnerShop = () => {
         borderColor="border.default"
         borderRadius="lg"
         bg="bg.panel"
-        p={6}
+        p={{ base: 4, md: 6 }}
       >
         <VStack gap={4} align="stretch">
-          <HStack gap={4} align="start">
-            <Field.Root invalid={!!errors.name} flex={1}>
+          <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
+            <Field.Root invalid={!!errors.name}>
               <Field.Label>Shop name</Field.Label>
               <Input {...register("name")} />
               {errors.name && (
@@ -109,14 +110,14 @@ export const OwnerShop = () => {
               )}
             </Field.Root>
 
-            <Field.Root invalid={!!errors.phone} flex={1}>
+            <Field.Root invalid={!!errors.phone}>
               <Field.Label>Phone</Field.Label>
               <Input {...register("phone")} />
               {errors.phone && (
                 <Field.ErrorText>{errors.phone.message}</Field.ErrorText>
               )}
             </Field.Root>
-          </HStack>
+          </SimpleGrid>
 
           <Field.Root invalid={!!errors.address}>
             <Field.Label>Address</Field.Label>
@@ -126,8 +127,8 @@ export const OwnerShop = () => {
             )}
           </Field.Root>
 
-          <HStack gap={4} align="start">
-            <Field.Root invalid={!!errors.city} flex={1}>
+          <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
+            <Field.Root invalid={!!errors.city}>
               <Field.Label>City</Field.Label>
               <Input {...register("city")} placeholder="City" />
               {errors.city && (
@@ -135,17 +136,22 @@ export const OwnerShop = () => {
               )}
             </Field.Root>
 
-            <Field.Root invalid={!!errors.pincode} flex={1}>
+            <Field.Root invalid={!!errors.pincode}>
               <Field.Label>Pincode</Field.Label>
               <Input {...register("pincode")} placeholder="Pincode" />
               {errors.pincode && (
                 <Field.ErrorText>{errors.pincode.message}</Field.ErrorText>
               )}
             </Field.Root>
-          </HStack>
+          </SimpleGrid>
 
-          <HStack justify="flex-end" pt={2}>
-            <Button type="submit" loading={isSubmitting} disabled={!isDirty}>
+          <HStack justify={{ base: "stretch", sm: "flex-end" }} pt={2}>
+            <Button
+              type="submit"
+              loading={isSubmitting}
+              disabled={!isDirty}
+              w={{ base: "full", sm: "auto" }}
+            >
               Save changes
             </Button>
           </HStack>

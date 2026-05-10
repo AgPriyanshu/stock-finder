@@ -187,14 +187,20 @@ export const InventoryList = () => {
 
   return (
     <Box className="inventory-list" w="full">
-      <Flex justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
+      <Flex
+        justify="space-between"
+        align={{ base: "stretch", md: "center" }}
+        direction={{ base: "column", md: "row" }}
+        mb={6}
+        gap={4}
+      >
         <VStack align="start" gap={0}>
-          <Heading size="lg">Your inventory</Heading>
+          <Heading size={{ base: "md", md: "lg" }}>Your inventory</Heading>
           <Text color="text.secondary" fontSize="sm">
             Press 'n' to quickly add a new item.
           </Text>
         </VStack>
-        <Flex gap={2} wrap="wrap">
+        <Flex gap={2} wrap="wrap" w={{ base: "full", md: "auto" }}>
           <Input
             ref={fileInputRef}
             type="file"
@@ -206,6 +212,7 @@ export const InventoryList = () => {
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             loading={bulkUploadItems.isPending}
+            flex={{ base: 1, md: "initial" }}
           >
             <FiUpload /> Upload CSV
           </Button>
@@ -214,6 +221,7 @@ export const InventoryList = () => {
               setEditingItem(undefined);
               setIsModalOpen(true);
             }}
+            flex={{ base: 1, md: "initial" }}
           >
             <FiPlus /> Add item
           </Button>
@@ -230,7 +238,7 @@ export const InventoryList = () => {
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
-            <Dialog.Content maxW="lg">
+            <Dialog.Content maxW="lg" mx={{ base: 3, md: 0 }}>
               <Dialog.Header>
                 <Dialog.Title>
                   {editingItem ? "Edit Item" : "Add Item"}
