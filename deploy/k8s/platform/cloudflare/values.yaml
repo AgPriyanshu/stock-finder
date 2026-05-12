@@ -6,13 +6,13 @@ image:
   pullPolicy: IfNotPresent
 
 tunnel:
-  name: worldofapps
+  name: stock-finder
   credentialsJson: |
     {
       "AccountTag": "62042f9fcd5411eb85dc581b38dce3f2",
-      "TunnelID": "458691f4-9827-4ee2-b0df-4ea2deea4a0c",
-      "TunnelName": "worldofapps",
-      "TunnelSecret": "eFIcCO80HYOslkijfdkWllqBDRaL+31htz3u9bEk4U4="
+      "TunnelID": "af6692e5-6d5a-4af3-a405-3297c2407996",
+      "TunnelName": "stock-finder",
+      "TunnelSecret": "RfYvnvuudIVnGht06GJ95KNNRf03lJ5Gkkkw7sxPl2w="
     }
 
 ingress:

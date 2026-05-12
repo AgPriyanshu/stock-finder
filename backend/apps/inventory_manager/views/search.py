@@ -1,19 +1,97 @@
 import logging
+import os
 
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from ..models import Category, InventoryItem
 from ..serializers import SearchItemSerializer
 from ..services.search import build_search_qs, log_search
 
 logger = logging.getLogger(__name__)
 
 
+def _thumbnail_url(image):
+    """Return the thumb_200 variant URL for an ItemImage, or None."""
+    if image is None or not image.variants_ready:
+        return None
+
+    s3_base = os.environ.get("S3_PUBLIC_ENDPOINT", "").rstrip("/")
+    bucket = os.environ.get("S3_BUCKET", "")
+    prefix = image.s3_key.rsplit("/originals/", 1)[0]
+    key = f"{prefix}/variants/thumb_200.webp"
+
+    if s3_base and bucket:
+        return f"{s3_base}/{bucket}/{key}"
+
+    return None
+
+
 class SearchViewSet(ViewSet):
     authentication_classes = []
     permission_classes = []
+
+    @action(detail=False, methods=["get"], url_path="autocomplete")
+    def autocomplete(self, request):
+        q = request.query_params.get("q", "").strip()
+
+        if len(q) < 2:
+            return Response(
+                {
+                    "meta": {"status_code": 200, "success": True, "message": ""},
+                    "data": {"suggestions": []},
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        suggestions = []
+
+        # Category suggestions — simple prefix/contains match.
+        categories = (
+            Category.objects.filter(name__icontains=q)
+            .values("name")
+            .order_by("name")[:4]
+        )
+        for cat in categories:
+            suggestions.append({"name": cat["name"], "thumbnail": None, "type": "category"})
+
+        # Item suggestions — trigram match on normalised name, active only.
+        items = (
+            InventoryItem.objects.filter(
+                Q(name__icontains=q) | Q(name_normalized__trigram_similar=q.lower()),
+                status=InventoryItem.Status.ACTIVE,
+            )
+            .prefetch_related("images")
+            .order_by("name")
+            .distinct()[: 6]
+        )
+        for item in items:
+            primary_image = next(
+                (img for img in item.images.all() if img.is_primary),
+                next(iter(item.images.all()), None),
+            )
+            suggestions.append(
+                {
+                    "name": item.name,
+                    "thumbnail": _thumbnail_url(primary_image),
+                    "type": "item",
+                }
+            )
+
+        return Response(
+            {
+                "meta": {
+                    "status_code": status.HTTP_200_OK,
+                    "success": True,
+                    "message": "Autocomplete suggestions fetched.",
+                },
+                "data": {"suggestions": suggestions},
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["get"], url_path="items")
     def items(self, request):
