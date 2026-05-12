@@ -19,6 +19,7 @@ import { z } from "zod";
 import { useLogin } from "api/auth/auth-api";
 import { RoutePath } from "app/router/constants";
 import { toaster } from "design-system/toaster";
+import { useSeo } from "shared/hooks/use-seo";
 import { BrandHeading } from "../brand-heading";
 import { ShopSignupDialog } from "../search/shop-signup-dialog";
 
@@ -44,6 +45,12 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export const LoginPage = () => {
+  useSeo({
+    title: "Shop Owner Login",
+    description: "Sign in to your Stock Finder shop owner account to manage your inventory, view leads, and update your shop profile.",
+    noIndex: true,
+  });
+
   const navigate = useNavigate();
 
   // ── OTP state (kept for future re-enable) ──────────────────────────────────

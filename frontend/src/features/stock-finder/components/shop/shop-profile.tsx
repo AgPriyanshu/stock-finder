@@ -10,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
+import { useSeo } from "shared/hooks/use-seo";
 import { FiArrowLeft } from "react-icons/fi";
 import { Link, useLocation, useParams } from "react-router";
 import type { SfSearchItem } from "api/stock-finder";
@@ -45,31 +46,33 @@ export const ShopProfile = () => {
   const [recentTick, setRecentTick] = useState(0);
   const [reportConfirmOpen, setReportConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    if (!shop) {
-      return;
-    }
-    document.title = `${shop.name} - Stock Finder`;
-    return () => {
-      document.title = "Stock Finder";
-    };
-  }, [shop]);
+  const topItems = items
+    .slice(0, 3)
+    .map((item) => item.name)
+    .join(", ");
+  const shopDescription = shop
+    ? `${shop.name} has dead stock inventory${topItems ? `: ${topItems}` : "."} Find discounted items and contact the shop directly on Stock Finder.`
+    : undefined;
+  useSeo({ title: shop?.name, description: shopDescription });
 
   useEffect(() => {
-    if (!shop) {
-      return;
-    }
-    const description = items
-      .slice(0, 3)
-      .map((item) => item.name)
-      .join(", ");
-    const meta =
-      document.querySelector<HTMLMetaElement>('meta[name="description"]') ||
-      document.createElement("meta");
-    meta.name = "description";
-    meta.content = `${shop.name} has dead stock inventory${description ? `: ${description}` : "."}`;
-    document.head.appendChild(meta);
-  }, [items, shop]);
+    if (!shop) return;
+
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "shop-jsonld";
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: shop.name,
+      description: shopDescription,
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById("shop-jsonld")?.remove();
+    };
+  }, [shop, shopDescription]);
 
   if (isShopLoading) {
     return (

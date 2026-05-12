@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /shops/
+Allow: /terms
+Allow: /privacy
+Disallow: /owner/
+Disallow: /login
+
+Sitemap: /sitemap.xml

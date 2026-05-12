@@ -4,6 +4,7 @@ import { useCategories, useSearchItems } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { useSeo } from "shared/hooks/use-seo";
 import { BrandHeading } from "../brand-heading";
 import {
   getOwnerToken,
@@ -175,6 +176,14 @@ export const SearchPage = () => {
   const locationLabel =
     customLocationLabel ??
     (!buyerLocation.isLoading ? buyerLocation.label : undefined);
+
+  const seoTitle = params.q
+    ? `${params.q} near ${locationLabel ?? "you"}`
+    : undefined;
+  const seoDescription = params.q
+    ? `Find shops near you selling "${params.q}". Browse inventory, compare prices, and contact sellers directly on Stock Finder.`
+    : undefined;
+  useSeo({ title: seoTitle, description: seoDescription });
 
   return (
     <VStack className="search-page" align="stretch" gap={0} h="full">

@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Box } from "@chakra-ui/react";
+import { useSeo } from "shared/hooks/use-seo";
 import termsContent from "../../content/terms.md?raw";
 
 const markdownStyles = {
@@ -13,16 +14,23 @@ const markdownStyles = {
   "& a": { color: "intent.primary", textDecoration: "underline" },
 };
 
-export const TermsPage = () => (
-  <Box
-    className="terms-page"
-    maxW="720px"
-    mx="auto"
-    px={6}
-    py={8}
-    pb={16}
-    css={markdownStyles}
-  >
-    <ReactMarkdown remarkPlugins={[remarkGfm]}>{termsContent}</ReactMarkdown>
-  </Box>
-);
+export const TermsPage = () => {
+  useSeo({
+    title: "Terms of Service",
+    description: "Read the Stock Finder terms of service to understand the rules and guidelines for using our platform.",
+  });
+
+  return (
+    <Box
+      className="terms-page"
+      maxW="720px"
+      mx="auto"
+      px={6}
+      py={8}
+      pb={16}
+      css={markdownStyles}
+    >
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{termsContent}</ReactMarkdown>
+    </Box>
+  );
+};
