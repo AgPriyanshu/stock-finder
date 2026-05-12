@@ -40,7 +40,7 @@ spec:
             - name: POSTGRES_USER
               value: "postgres"
             - name: POSTGRES_DB
-              value: "postgres"
+              value: "stock_finder"
             - name: POSTGRES_PASSWORD
               value: "postgres"
             - name: PGDATA
