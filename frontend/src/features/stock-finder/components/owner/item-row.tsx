@@ -13,13 +13,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import {
-  FiMoreVertical,
-  FiEdit2,
-  FiRefreshCw,
-  FiTrash2,
-  FiCpu,
-} from "react-icons/fi";
+import { FiMoreVertical, FiEdit2, FiRefreshCw, FiTrash2 } from "react-icons/fi";
+import { ItemPlaceholder } from "../item-placeholder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import type { SfItem } from "api/stock-finder";
 import { useRefreshItem, useDeleteItem } from "api/stock-finder";
@@ -148,16 +143,7 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
                   objectFit="cover"
                 />
               ) : (
-                <Box
-                  w="full"
-                  h="full"
-                  bg="surface.subtle"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <FiCpu size={18} color="var(--chakra-colors-fg-muted)" />
-                </Box>
+                <ItemPlaceholder itemName={item.name} minH="100%" />
               )}
             </Box>
             <VStack align="start" gap={1} minW={0} flex={1}>
@@ -197,7 +183,7 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
                 objectFit="cover"
               />
             ) : (
-              <Box w="full" h="full" bg="surface.subtle" />
+              <ItemPlaceholder itemName={item.name} minH="40px" />
             )}
           </Box>
           <Text fontWeight="medium" lineClamp={1}>
