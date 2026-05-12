@@ -8,9 +8,9 @@ image:
   pullPolicy: Always
 
 # Public backend API URL (used at build time via VITE_API_BASE_URL)
-# Build with: docker build --build-arg VITE_API_BASE_URL=https://api.worldofapps.bar -t stock-finder-frontend .
+# Build with: docker build --build-arg VITE_API_BASE_URL=https://api.stock-finder.shop -t stock-finder-frontend .
 backend:
-  publicUrl: "https://api.worldofapps.bar"
+  publicUrl: "https://api.stock-finder.shop"
 
 service:
   type: ClusterIP

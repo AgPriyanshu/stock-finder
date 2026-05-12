@@ -8,7 +8,7 @@ spec:
       namespace: gateway-ns
       sectionName: http
   hostnames:
-    - "worldofapps.bar"
+    - "stock-finder.shop"
   rules:
     - matches:
         - path:
@@ -29,7 +29,7 @@ spec:
       namespace: gateway-ns
       sectionName: http
   hostnames:
-    - "api.worldofapps.bar"
+    - "api.stock-finder.shop"
   rules:
     - matches:
         - path:
@@ -50,7 +50,7 @@ spec:
       namespace: gateway-ns
       sectionName: http
   hostnames:
-    - "s3.worldofapps.bar"
+    - "s3.stock-finder.shop"
   rules:
     - matches:
         - path:
