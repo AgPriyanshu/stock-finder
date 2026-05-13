@@ -28,6 +28,7 @@ def _client_ip(request):
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    throttle_scope = "sf_login"
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -59,6 +60,7 @@ class LoginView(APIView):
 class OTPRequestView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    throttle_scope = "sf_otp_request"
 
     def post(self, request):
         serializer = OTPRequestSerializer(data=request.data)
@@ -79,6 +81,7 @@ class OTPRequestView(APIView):
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    throttle_scope = "sf_otp_verify"
 
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
@@ -114,6 +117,7 @@ class OTPVerifyView(APIView):
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    throttle_scope = "sf_token_refresh"
 
     def post(self, request):
         serializer = RefreshTokenSerializer(data=request.data)

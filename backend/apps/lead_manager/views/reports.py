@@ -14,6 +14,7 @@ from ..serializers import CreateReportSerializer, ReportSerializer
 class ReportCreateView(APIView):
     authentication_classes = [JWTBearerAuthentication]
     permission_classes = [AllowAny]
+    throttle_scope = "sf_report"
 
     def post(self, request):
         from apps.inventory_manager.models import InventoryItem

@@ -14,12 +14,6 @@ spec:
         - path:
             type: PathPrefix
             value: /
-      filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: gateway.nginx.org
-            kind: SnippetsFilter
-            name: frontend-rate-limit
       backendRefs:
         - name: frontend-app-service
           port: 80
@@ -41,12 +35,6 @@ spec:
         - path:
             type: PathPrefix
             value: /
-      filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: gateway.nginx.org
-            kind: SnippetsFilter
-            name: backend-rate-limit
       backendRefs:
         - name: backend-app-service
           port: 80
@@ -68,12 +56,6 @@ spec:
         - path:
             type: PathPrefix
             value: /
-      filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: gateway.nginx.org
-            kind: SnippetsFilter
-            name: s3-rate-limit
       backendRefs:
         - name: seaweedfs-s3
           port: 8333
