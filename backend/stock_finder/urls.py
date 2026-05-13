@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from apps.shop_manager.views.admin_shops import AdminShopViewSet
 
 from .views import PingView
+
+_admin_router = DefaultRouter()
+_admin_router.register(r"shops", AdminShopViewSet, basename="admin-shops")
 
 urlpatterns = [
     path("auth/", include("apps.owner_manager.urls")),
@@ -11,6 +17,7 @@ urlpatterns = [
     path("search/", include("apps.inventory_manager.urls.search")),
     path("leads/", include("apps.lead_manager.urls.leads")),
     path("reports/", include("apps.lead_manager.urls.reports")),
+    path("manage/", include(_admin_router.urls)),
     path("ping/", PingView.as_view(), name="ping"),
     path("admin/", admin.site.urls),
 ]

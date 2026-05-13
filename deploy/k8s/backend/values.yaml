@@ -91,6 +91,8 @@ env:
     value: "seaweedfsadmin123"
   # JWT
   - name: SF_JWT_SECRET
-    value: "change-me-to-32-random-bytes-in-production"
+    value: "9c2a4bcd67e36471e391a134d1ea3950e714527c89668b7dcc0c5cfd2598035e"
   - name: SF_JWT_TTL_SECONDS
     value: "2592000"
+  - name: SF_ADMIN_TOKEN
+    value: "h74UCxJN05Wl8YzbPWKh8iHqZL3VZ8KCd9_H6a9Oj8Y"

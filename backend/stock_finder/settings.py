@@ -219,6 +219,10 @@ TWOFACTOR_API_KEY = os.environ.get("TWOFACTOR_API_KEY", "")
 SF_JWT_SECRET = os.environ.get("SF_JWT_SECRET", SECRET_KEY)
 SF_JWT_TTL_SECONDS = int(os.environ.get("SF_JWT_TTL_SECONDS", "2592000"))
 
+# Admin token — used by AdminTokenAuthentication to protect /manage/* endpoints.
+# Must be set to a long random string in production; leave blank to disable.
+SF_ADMIN_TOKEN = os.environ.get("SF_ADMIN_TOKEN", "")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

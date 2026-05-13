@@ -69,6 +69,16 @@ class ShopSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
 
+class AdminShopSerializer(ShopSerializer):
+    """ShopSerializer variant for admin use — is_verified is writable."""
+
+    owner_username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta(ShopSerializer.Meta):
+        fields = ShopSerializer.Meta.fields + ("owner_username",)
+        read_only_fields = ("id", "rating_avg", "created_at", "updated_at")
+
+
 class ShopWithDistanceSerializer(ShopSerializer):
     distance_m = serializers.SerializerMethodField()
 
