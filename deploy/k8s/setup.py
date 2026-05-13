@@ -7,6 +7,7 @@ starts minikube with computed resources, then deploys all Helm charts.
 """
 from __future__ import annotations
 
+import argparse
 import os
 import platform
 import shutil
@@ -206,15 +207,11 @@ def ensure_minikube_running(cpus: int, memory_mb: int) -> None:
 
     if minikube_is_running():
         current_cpus, current_mem = minikube_current_config()
-        if current_cpus == cpus and current_mem == memory_mb:
-            print("✅ Minikube already running with correct resources")
-            return
-
-        print(f"⚠️  Resource mismatch (running: {current_cpus}C/{current_mem}MB, "
-              f"target: {cpus}C/{memory_mb}MB) — backing up data before restart...")
-        backup_volumes()
-        run(["minikube", "stop"])
-        run(["minikube", "delete"])
+        if current_cpus != cpus or current_mem != memory_mb:
+            print(f"⚠️  Resource mismatch (running: {current_cpus}C/{current_mem}MB, "
+                  f"target: {cpus}C/{memory_mb}MB) — run with --reset to recreate the cluster.")
+        print("✅ Minikube already running")
+        return
 
     run([
         "minikube", "start",
@@ -334,6 +331,17 @@ def deploy_all(computed: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Stock Finder Kubernetes deployment script.",
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        default=False,
+        help="Delete and recreate the minikube cluster before deploying (destructive — backs up data first).",
+    )
+    args = parser.parse_args()
+
     print("🚀 Starting Stock Finder Kubernetes deployment...")
 
     step("Detecting machine resources")
@@ -345,7 +353,30 @@ def main() -> None:
 
     ensure_helm()
     ensure_minikube()
-    ensure_minikube_running(minikube_cpus, minikube_mem)
+
+    if args.reset:
+        print("\n⚠️  --reset will DELETE the minikube cluster and all in-cluster data.")
+        print("   Persistent volume data will be backed up first.")
+        confirm = input("   Type 'yes' to continue: ").strip().lower()
+        if confirm != "yes":
+            print("Aborted.")
+            sys.exit(0)
+
+        if minikube_is_running():
+            backup_volumes()
+            run(["minikube", "stop"])
+            run(["minikube", "delete"])
+
+        run([
+            "minikube", "start",
+            "--cpus",   str(minikube_cpus),
+            "--memory", f"{minikube_mem}mb",
+            "--driver", "docker",
+        ])
+        print("✅ Minikube running")
+    else:
+        ensure_minikube_running(minikube_cpus, minikube_mem)
+
     deploy_all(computed)
 
     print("\n" + "=" * 50)
