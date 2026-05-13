@@ -238,14 +238,14 @@ def helm(release: str, chart: str, *extra_args: str, values: Path | None = None)
 
 
 def deploy_all(computed: Path) -> None:
-    # 1. Gateway API CRDs
+    # 1. Gateway API CRDs (nginx-gateway-fabric v2.2.2 requires Gateway API v1.2.0)
+    # Using direct HTTP download instead of kubectl kustomize with a remote GitHub URL
+    # to avoid the git-over-HTTPS timeout that kustomize triggers internally.
     step("Installing Gateway API CRDs")
-    kustomize_out = check_output([
-        "kubectl", "kustomize",
-        "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.2"
+    run([
+        "kubectl", "apply", "-f",
+        "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml",
     ])
-    subprocess.run(["kubectl", "apply", "-f", "-"], input=kustomize_out, text=True,
-                   check=True, cwd=SCRIPT_DIR)
     print("✅ Gateway API CRDs installed")
 
     # 2. Gateway namespace
