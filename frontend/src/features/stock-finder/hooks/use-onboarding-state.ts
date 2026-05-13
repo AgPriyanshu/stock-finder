@@ -1,24 +1,33 @@
 import { useState } from "react";
 
-export type OnboardingStep = "phone" | "shop-details" | "location";
+export type OnboardingStep = "phone" | "shop-details" | "location" | "address";
 
 export interface ShopDetails {
   name: string;
   whatsapp: string;
-  categorySlug: string;
+}
+
+export interface ShopLocation {
+  lat: number;
+  lng: number;
+  nominatimAddress: string;
 }
 
 interface OnboardingState {
   step: OnboardingStep;
   phone: string;
   shopDetails: ShopDetails;
+  location: ShopLocation;
 }
+
+const EMPTY_LOCATION: ShopLocation = { lat: 0, lng: 0, nominatimAddress: "" };
 
 export const useOnboardingState = (initialPhone = "") => {
   const [state, setState] = useState<OnboardingState>({
     step: initialPhone ? "shop-details" : "phone",
     phone: initialPhone,
-    shopDetails: { name: "", whatsapp: initialPhone, categorySlug: "" },
+    shopDetails: { name: "", whatsapp: initialPhone },
+    location: EMPTY_LOCATION,
   });
 
   const advanceToShopDetails = (phone: string) =>
@@ -27,5 +36,8 @@ export const useOnboardingState = (initialPhone = "") => {
   const advanceToLocation = (shopDetails: ShopDetails) =>
     setState((s) => ({ ...s, shopDetails, step: "location" }));
 
-  return { ...state, advanceToShopDetails, advanceToLocation };
+  const advanceToAddress = (location: ShopLocation) =>
+    setState((s) => ({ ...s, location, step: "address" }));
+
+  return { ...state, advanceToShopDetails, advanceToLocation, advanceToAddress };
 };

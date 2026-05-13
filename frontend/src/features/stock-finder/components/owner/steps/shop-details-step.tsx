@@ -6,10 +6,7 @@ import {
   InputGroup,
   Text,
   VStack,
-  Wrap,
-  WrapItem,
 } from "@chakra-ui/react";
-import { useCategories } from "api/stock-finder";
 import { useState } from "react";
 import type { ShopDetails } from "../../../hooks/use-onboarding-state";
 
@@ -28,11 +25,8 @@ export const ShopDetailsStep = ({
 }: ShopDetailsStepProps) => {
   const rawDefault = defaultPhone.replace("+91", "");
   const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState(rawDefault);
-  const [categorySlug, setCategorySlug] = useState("");
+  const [whatsapp, setWhatsapp] = useState(PHONE_REGEX.test(rawDefault) ? rawDefault : "");
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const { data: categories = [] } = useCategories();
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
@@ -52,7 +46,6 @@ export const ShopDetailsStep = ({
     onNext({
       name: name.trim(),
       whatsapp: whatsapp ? `+91${whatsapp}` : defaultPhone,
-      categorySlug,
     });
   };
 
@@ -97,34 +90,6 @@ export const ShopDetailsStep = ({
           <Field.ErrorText>{errors.whatsapp}</Field.ErrorText>
         )}
       </Field.Root>
-
-      {categories.length > 0 && (
-        <Field.Root w="full">
-          <Field.Label>Shop type (optional)</Field.Label>
-          <Wrap gap={2} mt={1}>
-            {categories.map((cat) => (
-              <WrapItem key={cat.slug}>
-                <Button
-                  size="sm"
-                  variant={categorySlug === cat.slug ? "solid" : "outline"}
-                  bg={categorySlug === cat.slug ? "intent.primary" : undefined}
-                  color={
-                    categorySlug === cat.slug ? "text.onIntent" : undefined
-                  }
-                  borderRadius="full"
-                  onClick={() =>
-                    setCategorySlug((prev) =>
-                      prev === cat.slug ? "" : cat.slug
-                    )
-                  }
-                >
-                  {cat.name}
-                </Button>
-              </WrapItem>
-            ))}
-          </Wrap>
-        </Field.Root>
-      )}
 
       <Button
         w="full"

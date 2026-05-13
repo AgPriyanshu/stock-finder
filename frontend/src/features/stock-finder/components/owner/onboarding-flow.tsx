@@ -13,6 +13,7 @@ import { RoutePath } from "app/router/constants";
 import { clearOwnerToken, clearToken } from "shared/local-storage";
 import { useLocation, useNavigate } from "react-router";
 import { useOnboardingState } from "../../hooks/use-onboarding-state";
+import { AddressStep } from "./steps/address-step";
 import { LocationStep } from "./steps/location-step";
 import { PhoneStep } from "./steps/phone-step";
 import { ShopDetailsStep } from "./steps/shop-details-step";
@@ -69,13 +70,13 @@ export const OnboardingFlow = () => {
 
   const phoneVerified = !!prefilledPhone;
   const stepLabels = phoneVerified
-    ? ["Shop details", "Location"]
-    : ["Phone", "Shop details", "Location"];
+    ? ["Shop details", "Location", "Address"]
+    : ["Phone", "Shop details", "Location", "Address"];
   const stepIndex = phoneVerified
-    ? ({ "shop-details": 0, location: 1 }[
-        state.step as "shop-details" | "location"
+    ? ({ "shop-details": 0, location: 1, address: 2 }[
+        state.step as "shop-details" | "location" | "address"
       ] ?? 0)
-    : ({ phone: 0, "shop-details": 1, location: 2 }[state.step] ?? 0);
+    : ({ phone: 0, "shop-details": 1, location: 2, address: 3 }[state.step] ?? 0);
 
   const handleLogout = () => {
     clearOwnerToken();
@@ -120,7 +121,13 @@ export const OnboardingFlow = () => {
             />
           )}
           {state.step === "location" && (
-            <LocationStep shopDetails={state.shopDetails} />
+            <LocationStep onNext={state.advanceToAddress} />
+          )}
+          {state.step === "address" && (
+            <AddressStep
+              shopDetails={state.shopDetails}
+              location={state.location}
+            />
           )}
         </VStack>
       </Flex>

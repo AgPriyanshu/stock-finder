@@ -10,14 +10,11 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useCreateShop } from "api/stock-finder";
-import { RoutePath } from "app/router/constants";
 import { useRef, useState } from "react";
 import { FiSearch } from "react-icons/fi";
-import { useNavigate } from "react-router";
 import { MapView } from "shared/components/map-view";
 import type { MapLibreMap } from "shared/components/map-view";
-import type { ShopDetails } from "../../../hooks/use-onboarding-state";
+import type { ShopLocation } from "../../../hooks/use-onboarding-state";
 
 const INDIA_CENTER: [number, number] = [78.9629, 20.5937];
 const INDIA_ZOOM = 5;
@@ -31,14 +28,12 @@ interface NominatimResult {
 }
 
 interface LocationStepProps {
-  shopDetails: ShopDetails;
+  onNext: (location: ShopLocation) => void;
 }
 
-export const LocationStep = ({ shopDetails }: LocationStepProps) => {
-  const navigate = useNavigate();
+export const LocationStep = ({ onNext }: LocationStepProps) => {
   const mapRef = useRef<MapLibreMap | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { mutate: createShop, isPending } = useCreateShop();
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
@@ -124,21 +119,7 @@ export const LocationStep = ({ shopDetails }: LocationStepProps) => {
   const handleConfirm = () => {
     const center = mapRef.current?.getCenter();
     if (!center) return;
-
-    createShop(
-      {
-        name: shopDetails.name,
-        phone: shopDetails.whatsapp,
-        latitude: center.lat,
-        longitude: center.lng,
-        address: selectedAddress,
-      },
-      {
-        onSuccess: () => {
-          navigate(RoutePath.OwnerInventory, { replace: true });
-        },
-      },
-    );
+    onNext({ lat: center.lat, lng: center.lng, nominatimAddress: selectedAddress });
   };
 
   return (
@@ -262,10 +243,8 @@ export const LocationStep = ({ shopDetails }: LocationStepProps) => {
         bg="intent.primary"
         color="text.onIntent"
         onClick={handleConfirm}
-        loading={isPending}
-        disabled={isPending}
       >
-        Create Shop
+        Confirm Location
       </Button>
     </VStack>
   );
