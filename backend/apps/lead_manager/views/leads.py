@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from shared.auth.jwt_authentication import JWTBearerAuthentication
+from shared.throttles import LeadAnonThrottle, LeadUserThrottle
 
 from ..models import Lead
 from ..serializers import CreateLeadSerializer, LeadSerializer
@@ -33,6 +34,7 @@ def _anonymous_user_for_phone(phone: str, buyer_name: str = "") -> User:
 class LeadCreateView(APIView):
     authentication_classes = [JWTBearerAuthentication]
     permission_classes = [AllowAny]
+    throttle_classes = [LeadAnonThrottle, LeadUserThrottle]
 
     def post(self, request):
         from apps.inventory_manager.models import InventoryItem

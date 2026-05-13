@@ -12,12 +12,14 @@ import platform
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import compute_resources
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
+BACKUP_DIR = Path.home() / ".stock-finder-backup"
 
 
 # ---------------------------------------------------------------------------
@@ -90,6 +92,84 @@ def ensure_minikube() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Volume backup / restore
+# ---------------------------------------------------------------------------
+
+def _wait_for_pod(pod: str, namespace: str = "default", timeout: int = 180) -> bool:
+    print(f"  Waiting for {pod}...")
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            phase = check_output([
+                "kubectl", "get", "pod", pod, "-n", namespace,
+                "-o", "jsonpath={.status.phase}",
+            ])
+            if phase == "Running":
+                return True
+        except subprocess.CalledProcessError:
+            pass
+        time.sleep(5)
+    print(f"  ⚠️  Timed out waiting for {pod}")
+    return False
+
+
+def backup_volumes() -> None:
+    step("Backing up persistent volumes")
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+
+    # PostgreSQL — dump stock_finder with DROP/CREATE so restore is idempotent
+    try:
+        print("  Backing up PostgreSQL...")
+        result = subprocess.run(
+            ["kubectl", "exec", "-n", "default", "postgres-0",
+             "--", "pg_dump", "-U", "postgres", "--clean", "--if-exists", "stock_finder"],
+            capture_output=True, text=True, check=True,
+        )
+        (BACKUP_DIR / "postgres.sql").write_text(result.stdout)
+        print("✅ PostgreSQL backed up")
+    except subprocess.CalledProcessError:
+        print("⚠️  PostgreSQL backup skipped (pod not running)")
+
+    # SeaweedFS — copy /data off the node
+    try:
+        print("  Backing up SeaweedFS...")
+        seaweedfs_dir = BACKUP_DIR / "seaweedfs"
+        seaweedfs_dir.mkdir(exist_ok=True)
+        run(["kubectl", "cp", "default/seaweedfs-0:/data", str(seaweedfs_dir)])
+        print("✅ SeaweedFS backed up")
+    except subprocess.CalledProcessError:
+        print("⚠️  SeaweedFS backup skipped (pod not running)")
+
+
+def restore_volumes() -> None:
+    if not BACKUP_DIR.exists():
+        return
+
+    step("Restoring persistent volumes")
+
+    pg_backup = BACKUP_DIR / "postgres.sql"
+    if pg_backup.exists() and _wait_for_pod("postgres-0"):
+        try:
+            subprocess.run(
+                ["kubectl", "exec", "-i", "-n", "default", "postgres-0",
+                 "--", "psql", "-U", "postgres", "-d", "stock_finder"],
+                input=pg_backup.read_text(), text=True, check=True,
+            )
+            print("✅ PostgreSQL restored")
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️  PostgreSQL restore failed: {e}")
+
+    seaweedfs_backup = BACKUP_DIR / "seaweedfs"
+    if seaweedfs_backup.exists() and _wait_for_pod("seaweedfs-0"):
+        try:
+            run(["kubectl", "cp", str(seaweedfs_backup), "default/seaweedfs-0:/data"])
+            run(["kubectl", "rollout", "restart", "statefulset/seaweedfs", "-n", "default"])
+            print("✅ SeaweedFS restored")
+        except subprocess.CalledProcessError:
+            print("⚠️  SeaweedFS restore failed")
+
+
+# ---------------------------------------------------------------------------
 # Minikube lifecycle
 # ---------------------------------------------------------------------------
 
@@ -131,7 +211,8 @@ def ensure_minikube_running(cpus: int, memory_mb: int) -> None:
             return
 
         print(f"⚠️  Resource mismatch (running: {current_cpus}C/{current_mem}MB, "
-              f"target: {cpus}C/{memory_mb}MB) — restarting...")
+              f"target: {cpus}C/{memory_mb}MB) — backing up data before restart...")
+        backup_volumes()
         run(["minikube", "stop"])
         run(["minikube", "delete"])
 
@@ -243,6 +324,9 @@ def deploy_all(computed: Path) -> None:
     helm("cloudflared", "platform/cloudflare",
          "--namespace", "gateway-ns", "--create-namespace")
     print("✅ Cloudflare Tunnel installed")
+
+    # 14. Restore volumes if a backup exists from a prior cluster teardown
+    restore_volumes()
 
 
 # ---------------------------------------------------------------------------

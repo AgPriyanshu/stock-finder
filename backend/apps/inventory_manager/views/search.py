@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from shared.throttles import SearchAnonThrottle, SearchUserThrottle
+
 from ..models import Category, InventoryItem
 from ..serializers import SearchItemSerializer
 from ..services.search import build_search_qs, log_search
@@ -33,6 +35,7 @@ def _thumbnail_url(image):
 class SearchViewSet(ViewSet):
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [SearchAnonThrottle, SearchUserThrottle]
 
     @action(detail=False, methods=["get"], url_path="autocomplete")
     def autocomplete(self, request):

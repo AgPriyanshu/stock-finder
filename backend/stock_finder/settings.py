@@ -181,11 +181,19 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
+        # Search — different limits for guests vs logged-in owners.
         "sf_search_anon": "60/min",
         "sf_search_auth": "300/min",
+        # Lead creation — guests are tightly limited to reduce spam.
         "sf_lead_anon": "5/min",
         "sf_lead_auth": "20/min",
+        # Auth endpoints.
+        "sf_login": "10/min",
         "sf_otp_request": "1/min",
+        "sf_otp_verify": "5/min",
+        "sf_token_refresh": "30/min",
+        # Abuse-report submission.
+        "sf_report": "10/min",
     },
 }
 
