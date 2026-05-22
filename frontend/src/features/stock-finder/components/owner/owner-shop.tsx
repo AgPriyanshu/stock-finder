@@ -17,11 +17,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import * as z from "zod";
 import { FiMapPin } from "react-icons/fi";
+import { useOwnerProfile, useUpdateOwnerProfile } from "api/auth/auth-api";
+import { QueryKeys } from "api/query-keys";
+import { queryClient } from "api/query-client";
 import { useMyShop, useUpdateShop } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { LocationPickerDialog } from "../search/location-picker-dialog";
 import { StaticShopMap } from "../shop/static-shop-map";
 import { ShopImageUploader } from "./shop-image-uploader";
+
+const ownerSchema = z.object({
+  firstName: z.string().min(1, "First name is required.").max(150),
+  lastName: z.string().max(150).optional(),
+});
+
+type OwnerFormValues = z.infer<typeof ownerSchema>;
 
 const shopSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,8 +45,28 @@ type ShopFormValues = z.infer<typeof shopSchema>;
 
 export const OwnerShop = () => {
   const { data: shop, isLoading } = useMyShop();
+  const { data: profile } = useOwnerProfile();
   const updateShop = useUpdateShop();
+  const { mutateAsync: updateProfile } = useUpdateOwnerProfile();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+
+  const ownerForm = useForm<OwnerFormValues>({
+    resolver: zodResolver(ownerSchema),
+    values: profile
+      ? { firstName: profile.firstName, lastName: profile.lastName ?? "" }
+      : undefined,
+  });
+
+  const onOwnerSubmit = async (data: OwnerFormValues) => {
+    try {
+      await updateProfile({ firstName: data.firstName.trim(), lastName: (data.lastName ?? "").trim() });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.ownerProfile });
+      toaster.success({ title: "Owner details updated" });
+      ownerForm.reset(data);
+    } catch {
+      toaster.error({ title: "Failed to update owner details" });
+    }
+  };
 
   const {
     register,
@@ -140,6 +170,48 @@ export const OwnerShop = () => {
 
       <Box
         as="form"
+        onSubmit={ownerForm.handleSubmit(onOwnerSubmit)}
+        borderWidth="1px"
+        borderColor="border.default"
+        borderRadius="lg"
+        bg="bg.panel"
+        p={{ base: 4, md: 6 }}
+      >
+        <VStack gap={4} align="stretch">
+          <Text fontWeight="medium">Owner details</Text>
+          <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
+            <Field.Root invalid={!!ownerForm.formState.errors.firstName}>
+              <Field.Label>First name</Field.Label>
+              <Input {...ownerForm.register("firstName")} placeholder="e.g. Ramesh" />
+              {ownerForm.formState.errors.firstName && (
+                <Field.ErrorText>{ownerForm.formState.errors.firstName.message}</Field.ErrorText>
+              )}
+            </Field.Root>
+
+            <Field.Root>
+              <Field.Label>
+                Last name{" "}
+                <Text as="span" color="fg.muted" fontSize="xs">(optional)</Text>
+              </Field.Label>
+              <Input {...ownerForm.register("lastName")} placeholder="e.g. Sharma" />
+            </Field.Root>
+          </SimpleGrid>
+
+          <HStack justify={{ base: "stretch", sm: "flex-end" }} pt={2}>
+            <Button
+              type="submit"
+              loading={ownerForm.formState.isSubmitting}
+              disabled={!ownerForm.formState.isDirty}
+              w={{ base: "full", sm: "auto" }}
+            >
+              Save changes
+            </Button>
+          </HStack>
+        </VStack>
+      </Box>
+
+      <Box
+        as="form"
         onSubmit={handleSubmit(onSubmit)}
         borderWidth="1px"
         borderColor="border.default"
@@ -148,6 +220,7 @@ export const OwnerShop = () => {
         p={{ base: 4, md: 6 }}
       >
         <VStack gap={4} align="stretch">
+          <Text fontWeight="medium">Shop details</Text>
           <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
             <Field.Root invalid={!!errors.name}>
               <Field.Label>Shop name</Field.Label>

@@ -36,7 +36,9 @@ export const AddressStep = ({ shopDetails, location }: AddressStepProps) => {
     if (!city.trim()) {
       next.city = "City is required.";
     }
-    if (pincode && !PINCODE_REGEX.test(pincode)) {
+    if (!pincode) {
+      next.pincode = "Pincode is required.";
+    } else if (!PINCODE_REGEX.test(pincode)) {
       next.pincode = "Enter a valid 6-digit pincode.";
     }
     setErrors(next);
@@ -54,7 +56,7 @@ export const AddressStep = ({ shopDetails, location }: AddressStepProps) => {
         longitude: location.lng,
         address: address.trim(),
         city: city.trim(),
-        pincode: pincode.trim() || undefined,
+        pincode: pincode.trim(),
       },
       {
         onSuccess: () => {
@@ -96,7 +98,7 @@ export const AddressStep = ({ shopDetails, location }: AddressStepProps) => {
       </Field.Root>
 
       <Field.Root invalid={!!errors.pincode} w="full">
-        <Field.Label>Pincode <Text as="span" color="text.muted" fontSize="xs">(optional)</Text></Field.Label>
+        <Field.Label>Pincode</Field.Label>
         <Input
           placeholder="e.g. 250001"
           inputMode="numeric"
@@ -113,7 +115,7 @@ export const AddressStep = ({ shopDetails, location }: AddressStepProps) => {
         color="text.onIntent"
         onClick={handleSubmit}
         loading={isPending}
-        disabled={isPending || !address.trim() || !city.trim()}
+        disabled={isPending || !address.trim() || !city.trim() || pincode.length !== 6}
       >
         Create Shop
       </Button>
