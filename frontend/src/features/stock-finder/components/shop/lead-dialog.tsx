@@ -17,11 +17,11 @@ import type { SfSearchItem, SfShop } from "api/stock-finder";
 import {
   useCreateLead,
   useCreateReview,
-  useRequestOtp,
-  useVerifyOtp,
+  // useRequestOtp,
+  // useVerifyOtp,
 } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
-import { getAccessToken } from "shared/local-storage/token";
+// import { getAccessToken } from "shared/local-storage/token";
 import { markRecentLead } from "../../hooks/use-recent-leads";
 
 interface LeadDialogProps {
@@ -73,23 +73,23 @@ export const LeadDialog = ({
   onSent,
 }: LeadDialogProps) => {
   const createLead = useCreateLead();
-  const requestOtp = useRequestOtp();
-  const verifyOtp = useVerifyOtp();
+  // const requestOtp = useRequestOtp();
+  // const verifyOtp = useVerifyOtp();
   const createReview = useCreateReview(shop.id);
 
   const [step, setStep] = useState<Step>("form");
   const [submittedLeadId, setSubmittedLeadId] = useState<string | null>(null);
   const [buyerName, setBuyerName] = useState("");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [isPhoneVerified, setIsPhoneVerified] = useState(!!getAccessToken());
+  // const [otp, setOtp] = useState("");
+  // const [isPhoneVerified, setIsPhoneVerified] = useState(!!getAccessToken());
   const [message, setMessage] = useState("");
   const [rating, setRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const defaultMessage = item
     ? `Hi, is this ${item.name} available? Best price?`
     : "";
-  const needsOtp = !getAccessToken();
+  // const needsOtp = !getAccessToken();
 
   const handleClose = () => {
     setStep("form");
@@ -99,24 +99,8 @@ export const LeadDialog = ({
     onClose();
   };
 
-  const handleRequestOtp = async () => {
-    try {
-      await requestOtp.mutateAsync(phone);
-      toaster.success({ title: "OTP sent" });
-    } catch {
-      toaster.error({ title: "Failed to send OTP" });
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    try {
-      await verifyOtp.mutateAsync({ phone, otp });
-      setIsPhoneVerified(true);
-      toaster.success({ title: "Phone verified" });
-    } catch {
-      toaster.error({ title: "Invalid OTP" });
-    }
-  };
+  // const handleRequestOtp = async () => { ... };
+  // const handleVerifyOtp = async () => { ... };
 
   const handleSubmit = async () => {
     if (!item) return;
@@ -130,7 +114,6 @@ export const LeadDialog = ({
       });
       markRecentLead(item.id);
       setMessage("");
-      setOtp("");
       setSubmittedLeadId(lead.id);
       onSent();
       setStep("rating");
@@ -185,45 +168,16 @@ export const LeadDialog = ({
                       <Field.Label>Phone</Field.Label>
                       <Input
                         value={phone}
-                        onChange={(event) => {
-                          setPhone(event.target.value);
-                          if (needsOtp) {
-                            setIsPhoneVerified(false);
-                            setOtp("");
-                          }
-                        }}
+                        onChange={(event) => setPhone(event.target.value)}
                         placeholder="+919876543210"
                       />
                     </Field.Root>
-                    {needsOtp && (
-                      <Field.Root required>
-                        <Field.Label>OTP</Field.Label>
-                        <Input
-                          value={otp}
-                          onChange={(event) => setOtp(event.target.value)}
-                          placeholder="6 digit code"
-                        />
-                        <Button
-                          mt={2}
-                          size="sm"
-                          variant="outline"
-                          onClick={handleRequestOtp}
-                          loading={requestOtp.isPending}
-                          disabled={!phone}
-                        >
-                          Send OTP
-                        </Button>
-                        <Button
-                          mt={2}
-                          size="sm"
-                          onClick={handleVerifyOtp}
-                          loading={verifyOtp.isPending}
-                          disabled={!phone || otp.length !== 6}
-                        >
-                          Verify phone
-                        </Button>
-                      </Field.Root>
-                    )}
+                    {/* OTP verification commented out — re-enable when DLT is registered
+                    <Field.Root required>
+                      <Field.Label>OTP</Field.Label>
+                      ...
+                    </Field.Root>
+                    */}
                     <Field.Root required>
                       <Field.Label>Message</Field.Label>
                       <Textarea
@@ -241,11 +195,7 @@ export const LeadDialog = ({
                   <Button
                     onClick={handleSubmit}
                     loading={createLead.isPending}
-                    disabled={
-                      !phone ||
-                      !(message || defaultMessage) ||
-                      (needsOtp && !isPhoneVerified)
-                    }
+                    disabled={!phone || !(message || defaultMessage)}
                   >
                     Send lead
                   </Button>
