@@ -132,7 +132,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search tools, fixtures, parts..."
+          placeholder="Search products..."
           size="lg"
           bg="bg.panel"
         />

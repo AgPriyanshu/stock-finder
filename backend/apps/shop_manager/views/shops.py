@@ -9,9 +9,18 @@ from rest_framework.response import Response
 
 from shared.auth.jwt_authentication import JWTBearerAuthentication
 
-from ..models import Shop
-from ..serializers import ShopSerializer, ShopWithDistanceSerializer
+from ..models import Shop, ShopImage
+from ..serializers import (
+    ConfirmShopImageRequestSerializer,
+    PresignShopImageRequestSerializer,
+    ShopImageSerializer,
+    ShopSerializer,
+    ShopWithDistanceSerializer,
+)
+from ..services import images as image_service
 from ..services.cache import nearby_cache_get, nearby_cache_set
+
+MAX_SHOP_IMAGES = 3
 
 
 class ShopViewSet(viewsets.ViewSet):
@@ -35,7 +44,7 @@ class ShopViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            shop = Shop.objects.get(pk=pk)
+            shop = Shop.objects.prefetch_related("images").get(pk=pk)
         except Shop.DoesNotExist as exc:
             raise NotFound("Shop not found.") from exc
 
@@ -43,7 +52,7 @@ class ShopViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get", "patch"], url_path="me")
     def me(self, request):
-        shop = Shop.objects.filter(user=request.user).first()
+        shop = Shop.objects.prefetch_related("images").filter(user=request.user).first()
 
         if not shop:
             raise NotFound("You don't have a shop yet.")
@@ -59,6 +68,91 @@ class ShopViewSet(viewsets.ViewSet):
 
         shop.save()
         return Response(ShopSerializer(shop).data)
+
+    @action(detail=False, methods=["post"], url_path="me/images/presign")
+    def presign_image(self, request):
+        shop = Shop.objects.filter(user=request.user).first()
+
+        if not shop:
+            raise NotFound("You don't have a shop yet.")
+
+        if shop.images.count() >= MAX_SHOP_IMAGES:
+            return Response(
+                {"meta": {"status_code": 400, "success": False, "message": f"Maximum {MAX_SHOP_IMAGES} images allowed."}, "data": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = PresignShopImageRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        presign_data = image_service.presign_put(
+            shop_id=str(shop.pk),
+            content_type=serializer.validated_data["content_type"],
+        )
+
+        return Response(
+            {"meta": {"status_code": 200, "success": True, "message": "Presigned URL generated."}, "data": presign_data},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["post"], url_path="me/images/confirm")
+    def confirm_image(self, request):
+        shop = Shop.objects.filter(user=request.user).first()
+
+        if not shop:
+            raise NotFound("You don't have a shop yet.")
+
+        if shop.images.count() >= MAX_SHOP_IMAGES:
+            return Response(
+                {"meta": {"status_code": 400, "success": False, "message": f"Maximum {MAX_SHOP_IMAGES} images allowed."}, "data": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ConfirmShopImageRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        existing_count = shop.images.count()
+        image = ShopImage.objects.create(
+            shop=shop,
+            s3_key=serializer.validated_data["key"],
+            width=serializer.validated_data["width"],
+            height=serializer.validated_data["height"],
+            is_primary=existing_count == 0 or serializer.validated_data.get("is_primary", False),
+            position=existing_count,
+        )
+
+        return Response(
+            {"meta": {"status_code": 201, "success": True, "message": "Image confirmed."}, "data": ShopImageSerializer(image).data},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path=r"me/images/(?P<image_id>[0-9a-f-]+)",
+    )
+    def delete_image(self, request, image_id=None):
+        shop = Shop.objects.filter(user=request.user).first()
+
+        if not shop:
+            raise NotFound("You don't have a shop yet.")
+
+        try:
+            image = shop.images.get(pk=image_id)
+        except ShopImage.DoesNotExist:
+            return Response(
+                {"meta": {"status_code": 404, "success": False, "message": "Image not found."}, "data": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        s3_key = image.s3_key
+        image.delete()
+        image_service.delete_object(s3_key)
+
+        return Response(
+            {"meta": {"status_code": 200, "success": True, "message": "Image deleted."}, "data": None},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["get"], permission_classes=[AllowAny])
     def nearby(self, request):

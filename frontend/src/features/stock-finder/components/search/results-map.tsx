@@ -131,7 +131,7 @@ export const ResultsMap = ({
       mapRef.current = null;
     };
   // Stable refs and setState — safe with empty deps.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   useEffect(() => {

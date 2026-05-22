@@ -5,6 +5,7 @@ import {
   setAccessToken,
 } from "shared/local-storage/token";
 import { LoginPage } from "./components/auth/login-page";
+import { AnalyticsDashboard } from "./components/owner/analytics-dashboard";
 import { LeadInbox } from "./components/owner/lead-inbox";
 import { OnboardingFlow } from "./components/owner/onboarding-flow";
 import { InventoryList } from "./components/owner/inventory-list";
@@ -73,6 +74,7 @@ export const StockFinderRoutes = () => (
         <Route path="owner/inventory" element={<InventoryList />} />
         <Route path="owner/leads" element={<LeadInbox />} />
         <Route path="owner/shop" element={<OwnerShop />} />
+        <Route path="owner/analytics" element={<AnalyticsDashboard />} />
       </Route>
     </Route>
   </Routes>

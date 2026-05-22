@@ -46,5 +46,7 @@ export const QueryKeys = {
       ["stock-finder", "search", params] as const,
     autocomplete: (q: string) => ["stock-finder", "autocomplete", q] as const,
     leadInbox: ["stock-finder", "leads", "inbox"] as const,
+    analytics: ["stock-finder", "analytics"] as const,
+    shopReviews: (id: string) => ["stock-finder", "shops", id, "reviews"] as const,
   },
 };

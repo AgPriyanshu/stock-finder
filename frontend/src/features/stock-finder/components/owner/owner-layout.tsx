@@ -11,10 +11,11 @@ import {
 } from "@chakra-ui/react";
 import { queryClient } from "api/query-client";
 import { useState } from "react";
-import { FiInbox, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
+import { FiBarChart2, FiInbox, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
 import { MdOutlineInventory2 } from "react-icons/md";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { clearOwnerToken, clearToken } from "shared/local-storage";
+import { useOwnerNotifications } from "../../hooks/use-owner-notifications";
 import { BrandHeading } from "../brand-heading";
 
 const NAV_ITEMS = [
@@ -23,15 +24,21 @@ const NAV_ITEMS = [
     to: "/owner/inventory",
     icon: <MdOutlineInventory2 />,
   },
-  { label: "Leads", to: "/owner/leads", icon: <FiInbox /> },
+  { label: "Leads", to: "/owner/leads", icon: <FiInbox />, notifyKey: "leads" },
   { label: "My Shop", to: "/owner/shop", icon: <FiShoppingBag /> },
-];
+  { label: "Analytics", to: "/owner/analytics", icon: <FiBarChart2 /> },
+] as const;
 
 export const OwnerLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [newLeadCount, setNewLeadCount] = useState(0);
   const closeDrawer = () => setDrawerOpen(false);
+
+  useOwnerNotifications(() => setNewLeadCount((n) => n + 1));
+
+  const clearLeadBadge = () => setNewLeadCount(0);
 
   const handleLogout = () => {
     clearOwnerToken();
@@ -84,10 +91,22 @@ export const OwnerLayout = () => {
                       color={isActive ? "fg" : "fg.muted"}
                       fontWeight="medium"
                       bg={isActive ? "bg.muted" : "transparent"}
+                      position="relative"
                     >
-                      <Link to={to}>
+                      <Link to={to} onClick={label === "Leads" ? clearLeadBadge : undefined}>
                         {icon}
                         <Text>{label}</Text>
+                        {label === "Leads" && newLeadCount > 0 && (
+                          <Box
+                            position="absolute"
+                            top="4px"
+                            right="4px"
+                            w="8px"
+                            h="8px"
+                            bg="red.500"
+                            borderRadius="full"
+                          />
+                        )}
                       </Link>
                     </Button>
                   );
@@ -149,10 +168,31 @@ export const OwnerLayout = () => {
                         color={isActive ? "fg" : "fg.muted"}
                         fontWeight="medium"
                         bg={isActive ? "bg.muted" : "transparent"}
+                        position="relative"
                       >
-                        <Link to={to} onClick={closeDrawer}>
+                        <Link
+                          to={to}
+                          onClick={() => {
+                            closeDrawer();
+                            if (label === "Leads") clearLeadBadge();
+                          }}
+                        >
                           {icon}
-                          <Text>{label}</Text>
+                          <Text flex={1}>{label}</Text>
+                          {label === "Leads" && newLeadCount > 0 && (
+                            <Box
+                              px={2}
+                              py={0.5}
+                              bg="red.500"
+                              color="white"
+                              fontSize="xs"
+                              fontWeight="bold"
+                              borderRadius="full"
+                              lineHeight="1.4"
+                            >
+                              {newLeadCount}
+                            </Box>
+                          )}
                         </Link>
                       </Button>
                     );

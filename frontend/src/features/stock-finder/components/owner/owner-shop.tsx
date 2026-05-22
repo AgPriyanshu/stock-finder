@@ -14,10 +14,14 @@ import {
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import * as z from "zod";
+import { FiMapPin } from "react-icons/fi";
 import { useMyShop, useUpdateShop } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
+import { LocationPickerDialog } from "../search/location-picker-dialog";
 import { StaticShopMap } from "../shop/static-shop-map";
+import { ShopImageUploader } from "./shop-image-uploader";
 
 const shopSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -32,6 +36,7 @@ type ShopFormValues = z.infer<typeof shopSchema>;
 export const OwnerShop = () => {
   const { data: shop, isLoading } = useMyShop();
   const updateShop = useUpdateShop();
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
 
   const {
     register,
@@ -89,7 +94,49 @@ export const OwnerShop = () => {
         )}
       </HStack>
 
-      <StaticShopMap shop={shop} />
+      <Box>
+        <StaticShopMap shop={shop} />
+        <Button
+          size="sm"
+          variant="outline"
+          mt={2}
+          onClick={() => setLocationPickerOpen(true)}
+        >
+          <FiMapPin /> Change location
+        </Button>
+      </Box>
+
+      <LocationPickerDialog
+        isOpen={locationPickerOpen}
+        currentLat={shop.lat ?? undefined}
+        currentLng={shop.lng ?? undefined}
+        onClose={() => setLocationPickerOpen(false)}
+        onConfirm={async ({ lat, lng }) => {
+          try {
+            await updateShop.mutateAsync({ latitude: lat, longitude: lng });
+            toaster.success({ title: "Location updated" });
+          } catch {
+            toaster.error({ title: "Failed to update location" });
+          }
+        }}
+      />
+
+      <Box
+        borderWidth="1px"
+        borderColor="border.default"
+        borderRadius="lg"
+        bg="bg.panel"
+        p={{ base: 4, md: 6 }}
+      >
+        <VStack gap={4} align="stretch">
+          <Text fontWeight="medium">Shop photos</Text>
+          <Text fontSize="sm" color="text.secondary">
+            Add up to 3 photos of your shop or products. Buyers see these on
+            your shop profile.
+          </Text>
+          <ShopImageUploader images={shop.images ?? []} />
+        </VStack>
+      </Box>
 
       <Box
         as="form"

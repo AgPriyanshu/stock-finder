@@ -4,9 +4,12 @@ import { queryClient } from "api/query-client";
 import { QueryKeys } from "api/query-keys";
 import type { ApiResponse } from "api/types";
 import type {
+  SfConfirmImagePayload,
   SfCreateShopPayload,
+  SfPresignResponse,
   SfSearchItem,
   SfShop,
+  SfShopImage,
   SfShopWithDistance,
 } from "./types";
 
@@ -72,6 +75,43 @@ export const useUpdateShop = () => {
   return useMutation({
     mutationFn: async (payload: Partial<SfCreateShopPayload>) =>
       api.patch<ApiResponse<SfShop>>("/shops/me/", payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.stockFinder.myShop });
+    },
+  });
+};
+
+export const usePresignShopImage = () => {
+  return useMutation({
+    mutationFn: async (contentType: string) => {
+      const response = await api.post<ApiResponse<SfPresignResponse>>(
+        "/shops/me/images/presign/",
+        { contentType }
+      );
+      return response.data.data;
+    },
+  });
+};
+
+export const useConfirmShopImage = () => {
+  return useMutation({
+    mutationFn: async (payload: SfConfirmImagePayload) => {
+      const response = await api.post<ApiResponse<SfShopImage>>(
+        "/shops/me/images/confirm/",
+        payload
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.stockFinder.myShop });
+    },
+  });
+};
+
+export const useDeleteShopImage = () => {
+  return useMutation({
+    mutationFn: async (imageId: string) =>
+      api.delete(`/shops/me/images/${imageId}/`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.stockFinder.myShop });
     },

@@ -5,6 +5,16 @@ export interface SfCategory {
   parent: string | null;
 }
 
+export interface SfShopImage {
+  id: string;
+  position: number;
+  isPrimary: boolean;
+  width: number;
+  height: number;
+  url: string | null;
+  createdAt: string;
+}
+
 export interface SfShop {
   id: string;
   name: string;
@@ -16,6 +26,7 @@ export interface SfShop {
   ratingAvg: string;
   lat: number | null;
   lng: number | null;
+  images: SfShopImage[];
   createdAt: string;
   updatedAt: string;
 }
@@ -155,6 +166,42 @@ export interface SfCreateLeadPayload {
   message: string;
   phone?: string;
   buyerName?: string;
+}
+
+export interface SfAnalytics {
+  items: {
+    active: number;
+    sold: number;
+    hidden: number;
+    total: number;
+    staleSoon: number;
+  };
+  leads: {
+    total: number;
+    last30Days: number;
+    new: number;
+  };
+  leadsTrend: { date: string; count: number }[];
+  topItems: { id: string; name: string; leadCount: number }[];
+}
+
+export interface SfShopReview {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface SfShopReviewsResponse {
+  reviews: SfShopReview[];
+  ratingAvg: number;
+  count: number;
+}
+
+export interface SfCreateReviewPayload {
+  leadId: string;
+  rating: number;
+  comment?: string;
 }
 
 export interface SfCreateReportPayload {

@@ -2,7 +2,7 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.indexes import GistIndex
 from django.db import models
 
-from shared.models.base_models import BaseModel
+from shared.models.base_models import BaseModel, BaseModelWithoutUser
 
 
 class Shop(BaseModel):
@@ -25,3 +25,27 @@ class Shop(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class ShopReview(BaseModelWithoutUser):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name="reviews")
+    lead = models.OneToOneField(
+        "lead_manager.Lead", on_delete=models.CASCADE, related_name="review"
+    )
+    rating = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class ShopImage(BaseModelWithoutUser):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name="images")
+    s3_key = models.CharField(max_length=255)
+    width = models.PositiveIntegerField()
+    height = models.PositiveIntegerField()
+    position = models.PositiveSmallIntegerField(default=0)
+    is_primary = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["position"]
