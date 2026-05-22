@@ -34,7 +34,9 @@ export const ShopDetailsStep = ({
     if (trimmed.length < NAME_MIN || trimmed.length > NAME_MAX) {
       next.name = `Shop name must be ${NAME_MIN}–${NAME_MAX} characters.`;
     }
-    if (whatsapp && !PHONE_REGEX.test(whatsapp)) {
+    if (!whatsapp) {
+      next.whatsapp = "Mobile number is required.";
+    } else if (!PHONE_REGEX.test(whatsapp)) {
       next.whatsapp = "Enter a valid 10-digit Indian mobile number.";
     }
     setErrors(next);
@@ -45,7 +47,7 @@ export const ShopDetailsStep = ({
     if (!validate()) return;
     onNext({
       name: name.trim(),
-      whatsapp: whatsapp ? `+91${whatsapp}` : defaultPhone,
+      whatsapp: `+91${whatsapp}`,
     });
   };
 
@@ -96,7 +98,7 @@ export const ShopDetailsStep = ({
         bg="intent.primary"
         color="text.onIntent"
         onClick={handleNext}
-        disabled={!name.trim()}
+        disabled={!name.trim() || whatsapp.length !== 10}
       >
         Next — pin your location
       </Button>

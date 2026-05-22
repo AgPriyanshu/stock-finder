@@ -11,12 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { queryClient } from "api/query-client";
 import { useState } from "react";
-import { FiBarChart2, FiInbox, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
+import { FiBarChart2, FiInbox, FiKey, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
 import { MdOutlineInventory2 } from "react-icons/md";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { clearOwnerToken, clearToken } from "shared/local-storage";
 import { useOwnerNotifications } from "../../hooks/use-owner-notifications";
 import { BrandHeading } from "../brand-heading";
+import { ChangePasswordModal } from "./change-password-modal";
 
 const NAV_ITEMS = [
   {
@@ -34,6 +35,7 @@ export const OwnerLayout = () => {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newLeadCount, setNewLeadCount] = useState(0);
+  const [changePwOpen, setChangePwOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
 
   useOwnerNotifications(() => setNewLeadCount((n) => n + 1));
@@ -114,15 +116,26 @@ export const OwnerLayout = () => {
               </HStack>
             </HStack>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            color="fg.muted"
-            onClick={handleLogout}
-          >
-            <FiLogOut />
-            <Text display={{ base: "none", sm: "inline" }}>Logout</Text>
-          </Button>
+          <HStack gap={1}>
+            <IconButton
+              aria-label="Change password"
+              variant="ghost"
+              size="sm"
+              color="fg.muted"
+              onClick={() => setChangePwOpen(true)}
+            >
+              <FiKey />
+            </IconButton>
+            <Button
+              variant="ghost"
+              size="sm"
+              color="fg.muted"
+              onClick={handleLogout}
+            >
+              <FiLogOut />
+              <Text display={{ base: "none", sm: "inline" }}>Logout</Text>
+            </Button>
+          </HStack>
         </Flex>
       </Box>
 
@@ -215,6 +228,11 @@ export const OwnerLayout = () => {
           <Outlet />
         </Box>
       </Box>
+
+      <ChangePasswordModal
+        isOpen={changePwOpen}
+        onClose={() => setChangePwOpen(false)}
+      />
     </Flex>
   );
 };

@@ -3,15 +3,19 @@ from django.apps import apps
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
-from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from shared.auth.jwt_authentication import JWTBearerAuthentication
+
 from ..serializers import (
+    ChangePasswordSerializer,
     LoginSerializer,
     OTPRequestSerializer,
     OTPVerifySerializer,
+    OwnerProfileSerializer,
     RefreshTokenSerializer,
 )
 from ..services.jwt_tokens import decode_token, issue_token
@@ -140,3 +144,48 @@ class RefreshTokenView(APIView):
             {"token": new_token["token"], "expires_at": new_token["expires_at"]},
             status=status.HTTP_200_OK,
         )
+
+
+class OwnerProfileView(APIView):
+    authentication_classes = [JWTBearerAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response(
+            {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+            }
+        )
+
+    def patch(self, request):
+        serializer = OwnerProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        user.first_name = serializer.validated_data["first_name"]
+        user.last_name = serializer.validated_data["last_name"]
+        user.save(update_fields=["first_name", "last_name"])
+        return Response({"first_name": user.first_name, "last_name": user.last_name})
+
+
+class ChangePasswordView(APIView):
+    authentication_classes = [JWTBearerAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        current_password = serializer.validated_data["current_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        user = authenticate(request, username=request.user.username, password=current_password)
+
+        if user is None:
+            raise ValidationError({"current_password": "Current password is incorrect."})
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"changed": True}, status=status.HTTP_200_OK)

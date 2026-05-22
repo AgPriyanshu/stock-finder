@@ -7,6 +7,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { useOwnerProfile } from "api/auth/auth-api";
 import { useMyShop } from "api/stock-finder";
 import { queryClient } from "api/query-client";
 import { RoutePath } from "app/router/constants";
@@ -16,6 +17,7 @@ import { useOnboardingState } from "../../hooks/use-onboarding-state";
 import { AddressStep } from "./steps/address-step";
 import { LocationStep } from "./steps/location-step";
 import { PhoneStep } from "./steps/phone-step";
+import { ProfileStep } from "./steps/profile-step";
 import { ShopDetailsStep } from "./steps/shop-details-step";
 import { BrandHeading } from "../brand-heading";
 
@@ -52,10 +54,16 @@ export const OnboardingFlow = () => {
   const location = useLocation();
   const prefilledPhone =
     (location.state as { phone?: string } | null)?.phone ?? "";
-  const { data: shop, isLoading } = useMyShop();
-  const state = useOnboardingState(prefilledPhone);
 
-  if (isLoading) {
+  const { data: shop, isLoading: shopLoading } = useMyShop();
+  const { data: profile, isLoading: profileLoading } = useOwnerProfile();
+
+  const needsName =
+    !profileLoading && !profile?.firstName?.trim();
+
+  const state = useOnboardingState(prefilledPhone, needsName);
+
+  if (shopLoading || profileLoading) {
     return (
       <Center h="full">
         <Spinner />
@@ -69,14 +77,24 @@ export const OnboardingFlow = () => {
   }
 
   const phoneVerified = !!prefilledPhone;
-  const stepLabels = phoneVerified
-    ? ["Shop details", "Location", "Address"]
-    : ["Phone", "Shop details", "Location", "Address"];
-  const stepIndex = phoneVerified
-    ? ({ "shop-details": 0, location: 1, address: 2 }[
-        state.step as "shop-details" | "location" | "address"
-      ] ?? 0)
-    : ({ phone: 0, "shop-details": 1, location: 2, address: 3 }[state.step] ?? 0);
+
+  const buildLabels = () => {
+    const base = needsName
+      ? ["Owner details", "Shop details", "Location", "Address"]
+      : ["Shop details", "Location", "Address"];
+    return phoneVerified ? base : ["Phone", ...base];
+  };
+
+  const buildIndex = (): number => {
+    const stepMap: Record<string, number> = phoneVerified
+      ? needsName
+        ? { profile: 0, "shop-details": 1, location: 2, address: 3 }
+        : { "shop-details": 0, location: 1, address: 2 }
+      : needsName
+      ? { phone: 0, profile: 1, "shop-details": 2, location: 3, address: 4 }
+      : { phone: 0, "shop-details": 1, location: 2, address: 3 };
+    return stepMap[state.step] ?? 0;
+  };
 
   const handleLogout = () => {
     clearOwnerToken();
@@ -110,9 +128,12 @@ export const OnboardingFlow = () => {
 
       <Flex flex={1} py={8}>
         <VStack mt={"2rem"} gap={8} w="full">
-          <StepBar labels={stepLabels} current={stepIndex} />
+          <StepBar labels={buildLabels()} current={buildIndex()} />
           {state.step === "phone" && (
             <PhoneStep onVerified={state.advanceToShopDetails} />
+          )}
+          {state.step === "profile" && (
+            <ProfileStep onNext={state.advanceFromProfile} />
           )}
           {state.step === "shop-details" && (
             <ShopDetailsStep

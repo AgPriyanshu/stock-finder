@@ -1,3 +1,3 @@
-from .auth import LoginView, OTPRequestView, OTPVerifyView, RefreshTokenView
+from .auth import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, RefreshTokenView
 
-__all__ = ["LoginView", "OTPRequestView", "OTPVerifyView", "RefreshTokenView"]
+__all__ = ["ChangePasswordView", "LoginView", "OTPRequestView", "OTPVerifyView", "OwnerProfileView", "RefreshTokenView"]

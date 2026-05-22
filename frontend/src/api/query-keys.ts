@@ -34,6 +34,7 @@ export const QueryKeys = {
   // Level Up characters.
   levelUpCharacters: ["/level-up/characters"],
   // Dead Stock.
+  ownerProfile: ["owner-profile"] as const,
   stockFinder: {
     categories: ["stock-finder", "categories"] as const,
     myShop: ["stock-finder", "shops", "me"] as const,
