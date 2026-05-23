@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, RefreshTokenView
+from .views import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, RefreshTokenView, ShopSignupRequestView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="sf-login"),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("refresh/", RefreshTokenView.as_view(), name="sf-refresh"),
     path("change-password/", ChangePasswordView.as_view(), name="sf-change-password"),
     path("me/", OwnerProfileView.as_view(), name="sf-owner-profile"),
+    path("signup-request/", ShopSignupRequestView.as_view(), name="sf-signup-request"),
 ]

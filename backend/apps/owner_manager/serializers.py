@@ -55,3 +55,10 @@ class OwnerProfileSerializer(serializers.Serializer):
 
     def validate_last_name(self, value):
         return value.strip()
+
+
+class ShopSignupRequestSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    phone = serializers.CharField(max_length=20)
+    shop_name = serializers.CharField(max_length=200)
+    city = serializers.CharField(max_length=100, allow_blank=True, default="")

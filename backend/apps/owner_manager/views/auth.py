@@ -1,7 +1,9 @@
 import jwt
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,6 +19,7 @@ from ..serializers import (
     OTPVerifySerializer,
     OwnerProfileSerializer,
     RefreshTokenSerializer,
+    ShopSignupRequestSerializer,
 )
 from ..services.jwt_tokens import decode_token, issue_token
 from ..services.otp import request_otp, verify_otp
@@ -189,3 +192,29 @@ class ChangePasswordView(APIView):
         user.save()
 
         return Response({"changed": True}, status=status.HTTP_200_OK)
+
+
+class ShopSignupRequestView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request):
+        serializer = ShopSignupRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if settings.NOTIFY_EMAIL:
+            send_mail(
+                subject="New shop signup request",
+                message=(
+                    f"Name: {data['name']}\n"
+                    f"Phone: {data['phone']}\n"
+                    f"Shop name: {data['shop_name']}\n"
+                    f"City: {data.get('city', '')}\n"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.NOTIFY_EMAIL],
+                fail_silently=True,
+            )
+
+        return Response({"received": True}, status=status.HTTP_200_OK)

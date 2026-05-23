@@ -7,6 +7,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { useShopSignupRequest } from "api/auth/auth-api";
 import { useState } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 
@@ -33,15 +34,18 @@ export const ShopSignupDialog = ({
     city: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const signupRequest = useShopSignupRequest();
 
   const handleChange =
     (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    signupRequest.mutate(form, {
+      onSuccess: () => setSubmitted(true),
+    });
   };
 
   const handleClose = () => {
@@ -119,8 +123,14 @@ export const ShopSignupDialog = ({
                       onChange={handleChange("city")}
                     />
                   </Field.Root>
+                  {signupRequest.isError && (
+                    <Text fontSize="sm" color="red.500">
+                      Something went wrong. Please try again.
+                    </Text>
+                  )}
                   <Button
                     type="submit"
+                    loading={signupRequest.isPending}
                     disabled={!form.name || !form.phone || !form.shopName}
                     mt={2}
                   >

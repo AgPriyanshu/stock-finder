@@ -24,3 +24,10 @@ export interface LoginResponse {
   user: { id: number; username: string };
   hasShop: boolean;
 }
+
+export interface ShopSignupRequestPayload {
+  name: string;
+  phone: string;
+  shopName: string;
+  city: string;
+}
