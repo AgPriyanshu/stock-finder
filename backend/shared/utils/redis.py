@@ -1,5 +1,2 @@
-from django.contrib.auth.models import AnonymousUser, User
-
-
-def get_notifications_channel(user: User | AnonymousUser):
-    return f"notifications_{user.pk}"
+def get_notifications_channel(user_id: int) -> str:
+    return f"notifications_{user_id}"

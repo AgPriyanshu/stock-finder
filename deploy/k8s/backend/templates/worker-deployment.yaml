@@ -30,6 +30,9 @@ spec:
           command: ["celery", "-A", "stock_finder", "worker", "-l", "info", "--concurrency", "2"]
           resources:
             {{- toYaml .Values.workerResources | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.appName }}-secrets
           env:
             {{- range .Values.env }}
             - name: {{ .name }}

@@ -3,6 +3,7 @@ import logging
 
 import redis
 from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -34,3 +35,25 @@ def notify_shop_owner_on_lead(sender, instance, created, **kwargs):
         _redis_client.publish(channel, json.dumps(payload))
     except Exception:
         logger.exception("Failed to publish lead SSE event for lead %s.", instance.pk)
+
+    if not settings.NOTIFY_EMAIL:
+        return
+
+    try:
+        buyer = instance.user
+        buyer_name = f"{buyer.first_name} {buyer.last_name}".strip() or buyer.username
+        send_mail(
+            subject=f"New lead on {instance.shop.name}",
+            message=(
+                f"Shop: {instance.shop.name}\n"
+                f"Item: {instance.item.name}\n"
+                f"Buyer: {buyer_name}\n"
+                f"Phone: {buyer.username}\n"
+                f"Message: {instance.message or '(none)'}\n"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.NOTIFY_EMAIL],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Failed to send lead notification email for lead %s.", instance.pk)

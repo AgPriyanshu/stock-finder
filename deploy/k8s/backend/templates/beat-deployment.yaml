@@ -31,6 +31,9 @@ spec:
           command: ["celery", "-A", "stock_finder", "beat", "-l", "info"]
           resources:
             {{- toYaml .Values.beatResources | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.appName }}-secrets
           env:
             {{- range .Values.env }}
             - name: {{ .name }}
