@@ -57,7 +57,7 @@ env:
   - name: ALLOWED_HOSTS
     value: "api.stock-finder.shop,localhost"
   - name: CORS_ALLOWED_ORIGINS
-    value: "https://stock-finder.shop"
+    value: "https://stock-finder.shop,https://app.stock-finder.shop"
   - name: CSRF_TRUSTED_ORIGINS
     value: "https://api.stock-finder.shop"
   # Database

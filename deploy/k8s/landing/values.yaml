@@ -1,0 +1,39 @@
+appName: landing-app
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/agpriyanshu/stock-finder-landing
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+serviceAccount:
+  name: ghcr-sa
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+probes:
+  enabled: true
+  livenessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readinessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5

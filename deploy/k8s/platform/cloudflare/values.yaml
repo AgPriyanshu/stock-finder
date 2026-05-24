@@ -18,6 +18,8 @@ tunnel:
 ingress:
   - hostname: stock-finder.shop
     service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
+  - hostname: app.stock-finder.shop
+    service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
   - hostname: api.stock-finder.shop
     service: http://platform-gateway-nginx.gateway-ns.svc.cluster.local
   - hostname: s3.stock-finder.shop
