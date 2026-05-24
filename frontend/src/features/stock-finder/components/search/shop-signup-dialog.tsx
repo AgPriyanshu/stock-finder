@@ -19,6 +19,7 @@ interface ShopSignupDialogProps {
 interface FormState {
   name: string;
   phone: string;
+  email: string;
   shopName: string;
   city: string;
 }
@@ -30,6 +31,7 @@ export const ShopSignupDialog = ({
   const [form, setForm] = useState<FormState>({
     name: "",
     phone: "",
+    email: "",
     shopName: "",
     city: "",
   });
@@ -51,7 +53,7 @@ export const ShopSignupDialog = ({
   const handleClose = () => {
     onClose();
     setTimeout(() => {
-      setForm({ name: "", phone: "", shopName: "", city: "" });
+      setForm({ name: "", phone: "", email: "", shopName: "", city: "" });
       setSubmitted(false);
     }, 300);
   };
@@ -108,6 +110,15 @@ export const ShopSignupDialog = ({
                     />
                   </Field.Root>
                   <Field.Root required>
+                    <Field.Label>Email address</Field.Label>
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={handleChange("email")}
+                    />
+                  </Field.Root>
+                  <Field.Root required>
                     <Field.Label>Shop name</Field.Label>
                     <Input
                       placeholder="e.g. Kumar Tools & Fixtures"
@@ -131,7 +142,7 @@ export const ShopSignupDialog = ({
                   <Button
                     type="submit"
                     loading={signupRequest.isPending}
-                    disabled={!form.name || !form.phone || !form.shopName}
+                    disabled={!form.name || !form.phone || !form.email || !form.shopName}
                     mt={2}
                   >
                     Request access

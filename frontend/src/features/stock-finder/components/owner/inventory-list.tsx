@@ -130,9 +130,11 @@ export const InventoryList = () => {
           borderColor="border.default"
         >
           {/* Placeholder for illustration */}
-          <Heading size="md">Your inventory is empty</Heading>
+          <Heading size="md">Your shop has no items yet</Heading>
           <Text color="text.secondary" textAlign="center" maxW="sm">
-            Add your first item to start receiving leads from nearby buyers.
+            Buyers search for items near them — your shop only appears in results
+            when it has matching items. Add your stock now so nearby buyers can
+            find and contact you.
           </Text>
           <Button mt={2} onClick={() => setIsModalOpen(true)}>
             <FiPlus /> Add your first item

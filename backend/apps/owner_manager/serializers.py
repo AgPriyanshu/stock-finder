@@ -60,5 +60,6 @@ class OwnerProfileSerializer(serializers.Serializer):
 class ShopSignupRequestSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     phone = serializers.CharField(max_length=20)
+    email = serializers.EmailField(max_length=254)
     shop_name = serializers.CharField(max_length=200)
     city = serializers.CharField(max_length=100, allow_blank=True, default="")

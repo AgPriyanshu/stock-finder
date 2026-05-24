@@ -28,6 +28,7 @@ export interface LoginResponse {
 export interface ShopSignupRequestPayload {
   name: string;
   phone: string;
+  email: string;
   shopName: string;
   city: string;
 }

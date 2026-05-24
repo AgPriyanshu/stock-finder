@@ -209,6 +209,7 @@ class ShopSignupRequestView(APIView):
                 message=(
                     f"Name: {data['name']}\n"
                     f"Phone: {data['phone']}\n"
+                    f"Email: {data['email']}\n"
                     f"Shop name: {data['shop_name']}\n"
                     f"City: {data.get('city', '')}\n"
                 ),
