@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 redeploy.py
-Redeploys the application layer (backend + frontend) without touching
+Redeploys the application layer (backend + frontend + landing) without touching
 platform infrastructure (postgres, redis, gateway, etc.).
 
 Usage:
-  python3 redeploy.py               # redeploy both
+  python3 redeploy.py               # redeploy all three
   python3 redeploy.py --backend     # backend only
   python3 redeploy.py --frontend    # frontend only
+  python3 redeploy.py --landing     # landing only
   python3 redeploy.py --no-restart  # skip rollout-restart (helm upgrade only)
   python3 redeploy.py --recompute   # regenerate values-computed.yaml first
 """
@@ -36,12 +37,11 @@ def step(msg: str) -> None:
     print("─" * 60)
 
 
-def helm_upgrade(release: str, chart: str, values: Path) -> None:
-    run([
-        "helm", "upgrade", "--install", release, chart,
-        "--namespace", "default",
-        "--values", str(values),
-    ])
+def helm_upgrade(release: str, chart: str, values: Path | None = None) -> None:
+    cmd = ["helm", "upgrade", "--install", release, chart, "--namespace", "default"]
+    if values is not None:
+        cmd += ["--values", str(values)]
+    run(cmd)
 
 
 def rollout_restart(deployment: str) -> None:
@@ -82,17 +82,30 @@ def deploy_frontend(values: Path, restart: bool) -> None:
         print("✅ Frontend rollout complete")
 
 
+def deploy_landing(restart: bool) -> None:
+    step("Upgrading Landing")
+    helm_upgrade("landing-app", "landing")
+    print("✅ Landing chart upgraded")
+    if restart:
+        step("Restarting Landing pods")
+        rollout_restart("landing-app")
+        print("✅ Landing rollout complete")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Redeploy Stock Finder application charts")
     parser.add_argument("--backend",    action="store_true", help="Redeploy backend only")
     parser.add_argument("--frontend",   action="store_true", help="Redeploy frontend only")
+    parser.add_argument("--landing",    action="store_true", help="Redeploy landing only")
     parser.add_argument("--no-restart", action="store_true", help="Skip rollout-restart after upgrade")
     parser.add_argument("--recompute",  action="store_true", help="Regenerate values-computed.yaml")
     args = parser.parse_args()
 
-    # Default: deploy both when neither flag is set
-    do_backend  = args.backend  or (not args.backend and not args.frontend)
-    do_frontend = args.frontend or (not args.backend and not args.frontend)
+    # Default: deploy all three when no specific flag is set
+    any_selected = args.backend or args.frontend or args.landing
+    do_backend  = args.backend  or not any_selected
+    do_frontend = args.frontend or not any_selected
+    do_landing  = args.landing  or not any_selected
     restart = not args.no_restart
 
     print("🚀 Stock Finder — application redeploy")
@@ -105,6 +118,9 @@ def main() -> None:
     if do_frontend:
         deploy_frontend(values, restart)
 
+    if do_landing:
+        deploy_landing(restart)
+
     print("\n" + "=" * 50)
     print("🎉 Redeploy complete!")
     print("=" * 50)
@@ -112,6 +128,8 @@ def main() -> None:
         print("  ✅ Backend upgraded (web + worker)")
     if do_frontend:
         print("  ✅ Frontend upgraded")
+    if do_landing:
+        print("  ✅ Landing upgraded")
     print("\nCheck pod status:")
     print("  kubectl get pods -n default")
     print("  kubectl logs -l app=backend-app --tail=100 -f -n default")
