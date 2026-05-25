@@ -1,6 +1,7 @@
 export const RoutePath = {
   Root: "/",
   Login: "/login",
+  Register: "/register",
   Terms: "/terms",
   Privacy: "/privacy",
   Shop: "/shops",

@@ -4,7 +4,7 @@ import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
 import { setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
-import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, ShopSignupRequestPayload, UpdateOwnerProfilePayload } from "./types";
+import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, RegisterPayload, ShopSignupRequestPayload, UpdateOwnerProfilePayload } from "./types";
 
 export const useLogin = () => {
   return useMutation({
@@ -51,5 +51,15 @@ export const useShopSignupRequest = () => {
   return useMutation({
     mutationFn: async (payload: ShopSignupRequestPayload) =>
       api.post<ApiResponse<{ received: boolean }>>("/auth/signup-request/", payload),
+  });
+};
+
+export const useRegister = () => {
+  return useMutation({
+    mutationFn: async (payload: RegisterPayload) =>
+      api.post<ApiResponse<LoginResponse>>("/auth/register/", payload),
+    onSuccess: (response: AxiosResponse<ApiResponse<LoginResponse>>) => {
+      setOwnerToken(response.data.data.token);
+    },
   });
 };

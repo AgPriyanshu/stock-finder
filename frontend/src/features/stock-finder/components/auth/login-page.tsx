@@ -10,7 +10,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiArrowLeft } from "react-icons/fi";
 import { MdEmail, MdLock } from "react-icons/md";
@@ -21,7 +20,6 @@ import { RoutePath } from "app/router/constants";
 import { toaster } from "design-system/toaster";
 import { useSeo } from "shared/hooks/use-seo";
 import { BrandHeading } from "../brand-heading";
-import { ShopSignupDialog } from "../search/shop-signup-dialog";
 
 // ── OTP schemas (kept for future re-enable) ──────────────────────────────────
 // const phoneSchema = z.object({
@@ -62,7 +60,6 @@ export const LoginPage = () => {
   // const otpForm = useForm<OtpForm>({ resolver: zodResolver(otpSchema) });
 
   const { mutate: login, isPending } = useLogin();
-  const [signupOpen, setSignupOpen] = useState(false);
 
   const form = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
@@ -272,17 +269,9 @@ export const LoginPage = () => {
         ── end OTP login ──────────────────────────────────────────────────── */}
 
         <Text fontSize="sm" color="fg.muted" textAlign="center">
-          <Text>New here?</Text>
-          <Button
-            variant="plain"
-            size="sm"
-            color="fg"
-            textDecor={"underline"}
-            p={0}
-            h="auto"
-            onClick={() => setSignupOpen(true)}
-          >
-            Create a shop account
+          New here?{" "}
+          <Button asChild variant="plain" size="sm" color="fg" textDecor="underline" p={0} h="auto">
+            <Link to={RoutePath.Register}>Create a shop account</Link>
           </Button>
         </Text>
 
@@ -293,10 +282,6 @@ export const LoginPage = () => {
         </Button>
       </VStack>
 
-      <ShopSignupDialog
-        isOpen={signupOpen}
-        onClose={() => setSignupOpen(false)}
-      />
     </Box>
   );
 };

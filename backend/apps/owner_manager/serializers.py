@@ -63,3 +63,19 @@ class ShopSignupRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     shop_name = serializers.CharField(max_length=200)
     city = serializers.CharField(max_length=100, allow_blank=True, default="")
+
+
+class RegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+    password = serializers.CharField(min_length=8)
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150, allow_blank=True, default="")
+
+    def validate_first_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("First name is required.")
+        return value
+
+    def validate_last_name(self, value):
+        return value.strip()

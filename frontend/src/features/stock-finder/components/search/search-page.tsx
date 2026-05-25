@@ -19,7 +19,6 @@ import { ResultsList } from "./results-list";
 import { ResultsMap } from "./results-map";
 import { SearchBar } from "./search-bar";
 import { flattenResults } from "./search-utils";
-import { ShopSignupDialog } from "./shop-signup-dialog";
 
 const numberParam = (value: string | null) =>
   value === null || value === "" ? undefined : Number(value);
@@ -30,7 +29,6 @@ export const SearchPage = () => {
   const { data: categories = [] } = useCategories();
   const navigate = useNavigate();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-  const [signupOpen, setSignupOpen] = useState(false);
   const [customLocationLabel, setCustomLocationLabel] = useState<string | null>(
     () => getSavedSearchLocation()?.label ?? null
   );
@@ -267,12 +265,8 @@ export const SearchPage = () => {
                   Shop owner?
                 </Text>
                 <HStack gap={2}>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() => setSignupOpen(true)}
-                  >
-                    Sign up
+                  <Button asChild size="xs" variant="outline">
+                    <Link to="/register">Sign up</Link>
                   </Button>
                   <Button
                     size="xs"
@@ -325,10 +319,6 @@ export const SearchPage = () => {
         currentLng={params.lng}
         onClose={() => setLocationPickerOpen(false)}
         onConfirm={handleLocationConfirm}
-      />
-      <ShopSignupDialog
-        isOpen={signupOpen}
-        onClose={() => setSignupOpen(false)}
       />
     </VStack>
   );

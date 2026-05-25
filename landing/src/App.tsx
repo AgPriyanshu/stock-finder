@@ -11,7 +11,6 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import {
   FiBox,
   FiMapPin,
@@ -22,7 +21,6 @@ import {
   FiUsers,
   FiZap,
 } from "react-icons/fi";
-import { ShopSignupDialog } from "./components/ShopSignupDialog";
 
 const APP_URL = (import.meta.env.VITE_APP_URL as string) || "https://app.stock-finder.shop";
 
@@ -117,8 +115,6 @@ function BenefitCard({
 }
 
 export default function App() {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
     <Box bg="white" minH="100vh">
       {/* Nav */}
@@ -219,16 +215,17 @@ export default function App() {
                     Search nearby shops
                   </Button>
                 </a>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  borderColor={BRAND}
-                  color={BRAND_DARK}
-                  _hover={{ bg: "orange.50" }}
-                  onClick={() => setDialogOpen(true)}
-                >
-                  List your shop
-                </Button>
+                <a href={`${APP_URL}/login`}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    borderColor={BRAND}
+                    color={BRAND_DARK}
+                    _hover={{ bg: "orange.50" }}
+                  >
+                    List your shop
+                  </Button>
+                </a>
               </HStack>
             </VStack>
 
@@ -412,16 +409,17 @@ export default function App() {
               within 24 hours. It's free to get started.
             </Text>
             <HStack gap={4} flexWrap="wrap" justify="center">
-              <Button
-                size="lg"
-                bg="white"
-                color={BRAND_DARK}
-                _hover={{ bg: "orange.50" }}
-                shadow="md"
-                onClick={() => setDialogOpen(true)}
-              >
-                Request access
-              </Button>
+              <a href={`${APP_URL}/login`}>
+                <Button
+                  size="lg"
+                  bg="white"
+                  color={BRAND_DARK}
+                  _hover={{ bg: "orange.50" }}
+                  shadow="md"
+                >
+                  Register your shop
+                </Button>
+              </a>
               <a href={APP_URL}>
                 <Button
                   size="lg"
@@ -474,10 +472,6 @@ export default function App() {
         </Container>
       </Box>
 
-      <ShopSignupDialog
-        isOpen={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
     </Box>
   );
 }

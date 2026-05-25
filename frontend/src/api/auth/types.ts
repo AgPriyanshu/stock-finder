@@ -32,3 +32,10 @@ export interface ShopSignupRequestPayload {
   shopName: string;
   city: string;
 }
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}

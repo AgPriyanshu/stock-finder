@@ -19,6 +19,7 @@ from ..serializers import (
     OTPVerifySerializer,
     OwnerProfileSerializer,
     RefreshTokenSerializer,
+    RegisterSerializer,
     ShopSignupRequestSerializer,
 )
 from ..services.jwt_tokens import decode_token, issue_token
@@ -192,6 +193,54 @@ class ChangePasswordView(APIView):
         user.save()
 
         return Response({"changed": True}, status=status.HTTP_200_OK)
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_scope = "sf_login"
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        email = data["email"].lower()
+
+        if User.objects.filter(username=email).exists():
+            raise ValidationError({"email": "An account with this email already exists."})
+
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=data["password"],
+            first_name=data["first_name"],
+            last_name=data.get("last_name", ""),
+        )
+
+        if settings.NOTIFY_EMAIL:
+            send_mail(
+                subject="New shop owner registered",
+                message=(
+                    f"Name: {user.first_name} {user.last_name}\n"
+                    f"Email: {email}\n"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.NOTIFY_EMAIL],
+                fail_silently=True,
+            )
+
+        token = issue_token(user)
+
+        return Response(
+            {
+                "token": token["token"],
+                "expires_at": token["expires_at"],
+                "user": {"id": user.id, "username": user.username},
+                "has_shop": False,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ShopSignupRequestView(APIView):

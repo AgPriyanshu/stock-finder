@@ -5,6 +5,7 @@ import {
   setAccessToken,
 } from "shared/local-storage/token";
 import { LoginPage } from "./components/auth/login-page";
+import { RegisterPage } from "./components/auth/register-page";
 import { AnalyticsDashboard } from "./components/owner/analytics-dashboard";
 import { LeadInbox } from "./components/owner/lead-inbox";
 import { OnboardingFlow } from "./components/owner/onboarding-flow";
@@ -48,6 +49,14 @@ export const StockFinderRoutes = () => (
         element={
           <GuestRoute>
             <LoginPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="register"
+        element={
+          <GuestRoute>
+            <RegisterPage />
           </GuestRoute>
         }
       />
