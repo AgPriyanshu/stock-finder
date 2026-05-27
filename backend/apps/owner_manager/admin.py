@@ -2,6 +2,15 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
+from .models import ReferralCode
+
+
+@admin.register(ReferralCode)
+class ReferralCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "user", "click_count", "signup_count", "created_at")
+    search_fields = ("code", "user__username")
+    readonly_fields = ("code", "click_count", "signup_count", "created_at")
+
 
 class ShopOwnerAdmin(UserAdmin):
     """Simplified User admin focused on shop owner accounts."""

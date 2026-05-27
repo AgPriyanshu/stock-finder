@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useAnalytics } from "api/stock-finder";
 import type { SfAnalytics } from "api/stock-finder";
+import { ReferralCard } from "./referral-card";
 
 const StatCard = ({
   label,
@@ -167,6 +168,9 @@ export const AnalyticsDashboard = () => {
         </Text>
         <LeadTrendChart trend={data.leadsTrend} />
       </Box>
+
+      {/* Referral */}
+      <ReferralCard />
 
       {/* Top items */}
       {data.topItems.length > 0 && (

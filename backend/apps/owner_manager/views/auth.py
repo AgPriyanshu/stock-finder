@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.db.models import F
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -217,6 +218,15 @@ class RegisterView(APIView):
             first_name=data["first_name"],
             last_name=data.get("last_name", ""),
         )
+
+        # Credit the referrer if a valid referral code was provided.
+        ref_code = (data.get("referral_code") or "").strip().upper()
+        if ref_code:
+            from ..models import ReferralCode  # noqa: PLC0415 — local import to avoid circular dep
+
+            ReferralCode.objects.filter(code=ref_code).exclude(user=user).update(
+                signup_count=F("signup_count") + 1
+            )
 
         if settings.NOTIFY_EMAIL:
             send_mail(

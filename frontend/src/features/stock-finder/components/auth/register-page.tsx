@@ -9,15 +9,19 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiArrowLeft } from "react-icons/fi";
 import { MdEmail, MdLock, MdPerson } from "react-icons/md";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
 import { useRegister } from "api/auth/auth-api";
 import { RoutePath } from "app/router/constants";
 import { toaster } from "design-system/toaster";
+import { LocalStorageManager } from "shared/local-storage/local-storage-manager";
+import { LocalStorageKeys } from "shared/local-storage/constants";
 import { useSeo } from "shared/hooks/use-seo";
+import { ReferralWelcomeModal } from "../owner/referral-welcome-modal";
 import { BrandHeading } from "../brand-heading";
 
 const registerSchema = z.object({
@@ -37,6 +41,9 @@ export const RegisterPage = () => {
   });
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get("ref") ?? "";
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const { mutate: register, isPending } = useRegister();
 
   const form = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) });
@@ -48,10 +55,13 @@ export const RegisterPage = () => {
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName ?? "",
+        ...(referralCode ? { referralCode } : {}),
       },
       {
         onSuccess: () => {
-          navigate(RoutePath.OwnerOnboarding, { replace: true });
+          // Show the referral welcome modal once, then navigate.
+          LocalStorageManager.setItem(LocalStorageKeys.REFERRAL_WELCOME_SHOWN, "1");
+          setShowReferralModal(true);
         },
         onError: (err: unknown) => {
           const msg =
@@ -64,7 +74,14 @@ export const RegisterPage = () => {
     );
   };
 
+  const handleReferralModalClose = () => {
+    setShowReferralModal(false);
+    navigate(RoutePath.OwnerOnboarding, { replace: true });
+  };
+
   return (
+    <>
+    <ReferralWelcomeModal isOpen={showReferralModal} onClose={handleReferralModalClose} />
     <Box
       minH="100dvh"
       w="100vw"
@@ -182,5 +199,6 @@ export const RegisterPage = () => {
         </Button>
       </VStack>
     </Box>
+    </>
   );
 };

@@ -194,6 +194,8 @@ REST_FRAMEWORK = {
         "sf_token_refresh": "30/min",
         # Abuse-report submission.
         "sf_report": "10/min",
+        # Referral link click tracking.
+        "sf_referral_track": "60/min",
     },
 }
 

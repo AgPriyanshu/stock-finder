@@ -38,4 +38,15 @@ export interface RegisterPayload {
   password: string;
   firstName: string;
   lastName: string;
+  referralCode?: string;
+}
+
+export interface ReferralCode {
+  code: string;
+  clickCount: number;
+  signupCount: number;
+}
+
+export interface TrackReferralClickPayload {
+  code: string;
 }

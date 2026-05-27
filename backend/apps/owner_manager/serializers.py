@@ -70,6 +70,7 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=8)
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150, allow_blank=True, default="")
+    referral_code = serializers.CharField(max_length=16, required=False, allow_blank=True, default="")
 
     def validate_first_name(self, value):
         value = value.strip()
@@ -79,3 +80,13 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate_last_name(self, value):
         return value.strip()
+
+
+class ReferralCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
+    click_count = serializers.IntegerField()
+    signup_count = serializers.IntegerField()
+
+
+class TrackReferralClickSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=16)

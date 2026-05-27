@@ -4,7 +4,7 @@ import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
 import { setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
-import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, RegisterPayload, ShopSignupRequestPayload, UpdateOwnerProfilePayload } from "./types";
+import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, ReferralCode, RegisterPayload, ShopSignupRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
 
 export const useLogin = () => {
   return useMutation({
@@ -61,5 +61,20 @@ export const useRegister = () => {
     onSuccess: (response: AxiosResponse<ApiResponse<LoginResponse>>) => {
       setOwnerToken(response.data.data.token);
     },
+  });
+};
+
+export const useReferralCode = () => {
+  return useQuery({
+    queryKey: QueryKeys.referralCode,
+    queryFn: async () => api.get<ApiResponse<ReferralCode>>("/auth/referral/"),
+    select: (r) => r.data.data,
+  });
+};
+
+export const useTrackReferralClick = () => {
+  return useMutation({
+    mutationFn: async (payload: TrackReferralClickPayload) =>
+      api.post<ApiResponse<{ tracked: boolean }>>("/auth/referral/track/", payload),
   });
 };
