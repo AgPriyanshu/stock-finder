@@ -67,8 +67,9 @@ export const ResultsMap = ({
   const mapRef = useRef<MapLibreMap | null>(null);
   const locationMarkerRef = useRef<maplibregl.Marker | null>(null);
   const itemsRef = useRef(sortedItems);
-  const initialLatRef = useRef(lat);
-  const initialLngRef = useRef(lng);
+  // useState initializer runs once on mount — correct semantic for "initial value".
+  const [initialLat] = useState(lat);
+  const [initialLng] = useState(lng);
   const isProgrammaticMoveRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -307,10 +308,10 @@ export const ResultsMap = ({
     <Box className="results-map" position="relative" h="full">
       <MapView
         initialCenter={[
-          initialLngRef.current ?? 77.209,
-          initialLatRef.current ?? 28.6139,
+          initialLng ?? 77.209,
+          initialLat ?? 28.6139,
         ]}
-        initialZoom={initialLatRef.current && initialLngRef.current ? 13 : 4}
+        initialZoom={initialLat && initialLng ? 13 : 4}
         onMapCreated={handleMapCreated}
         h="full"
         overflow="hidden"

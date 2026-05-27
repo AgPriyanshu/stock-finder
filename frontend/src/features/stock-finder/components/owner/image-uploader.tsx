@@ -19,7 +19,7 @@ import {
   rectSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import type { SfItemImage } from "api/stock-finder";
 import {
@@ -116,7 +116,9 @@ export const ImageUploader = ({
     hasPendingVariantsRef.current = hasPending;
 
     if (hasPending) {
-      setPollUntil((prev) => Math.max(prev, Date.now() + POLL_MS));
+      startTransition(() =>
+        setPollUntil((prev) => Math.max(prev, Date.now() + POLL_MS))
+      );
     }
   }, [images]);
 

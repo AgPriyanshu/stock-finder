@@ -7,7 +7,7 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { SfShopImage } from "api/stock-finder";
 
@@ -27,8 +27,18 @@ export const PhotoViewer = ({
   const [index, setIndex] = useState(initialIndex);
   const touchStartX = useRef<number | null>(null);
 
+  // Hoist prev/next before the effect that references them.
+  const prev = useCallback(
+    () => setIndex((i) => (i - 1 + images.length) % images.length),
+    [images.length],
+  );
+  const next = useCallback(
+    () => setIndex((i) => (i + 1) % images.length),
+    [images.length],
+  );
+
   useEffect(() => {
-    if (isOpen) setIndex(initialIndex);
+    if (isOpen) startTransition(() => setIndex(initialIndex));
   }, [isOpen, initialIndex]);
 
   useEffect(() => {
@@ -40,12 +50,7 @@ export const PhotoViewer = ({
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-    // prev/next/onClose are stable within the effect lifecycle.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, index, images.length]);
-
-  const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
-  const next = () => setIndex((i) => (i + 1) % images.length);
+  }, [isOpen, index, images.length, prev, next, onClose]);
 
   const current = images[index];
 
@@ -114,7 +119,7 @@ export const PhotoViewer = ({
                 if (touchStartX.current === null) return;
                 const dx =
                   (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
-                if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
+                if (Math.abs(dx) > 40) { if (dx < 0) next(); else prev(); }
                 touchStartX.current = null;
               }}
             >

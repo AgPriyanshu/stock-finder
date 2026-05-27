@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 export type OnboardingStep = "phone" | "profile" | "shop-details" | "location" | "address";
 
@@ -42,7 +42,7 @@ export const useOnboardingState = (initialPhone = "", needsName = false) => {
   // Correct the initial step once needsName is known after profile loads.
   useEffect(() => {
     if (needsName && state.step === "shop-details") {
-      setState((s) => ({ ...s, step: "profile" }));
+      startTransition(() => setState((s) => ({ ...s, step: "profile" })));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needsName]);

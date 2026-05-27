@@ -7,7 +7,7 @@ import {
   InputGroup,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { FiArrowRight, FiSearch, FiTag, FiX } from "react-icons/fi";
 import type { SfAutocompleteSuggestion } from "api/stock-finder";
 import { useSearchAutocomplete } from "api/stock-finder";
@@ -24,7 +24,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setDraft(value);
+    startTransition(() => setDraft(value));
   }, [value]);
 
   const { data: suggestions = [] } = useSearchAutocomplete(draft);

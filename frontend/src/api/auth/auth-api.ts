@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ApiResponse } from "api/types";
 import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
-import { setOwnerToken } from "../../shared/local-storage/token";
+import { setAccessToken, setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
 import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, ReferralCode, RegisterPayload, ShopSignupRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
 
@@ -59,7 +59,10 @@ export const useRegister = () => {
     mutationFn: async (payload: RegisterPayload) =>
       api.post<ApiResponse<LoginResponse>>("/auth/register/", payload),
     onSuccess: (response: AxiosResponse<ApiResponse<LoginResponse>>) => {
-      setOwnerToken(response.data.data.token);
+      const token = response.data.data.token;
+      setOwnerToken(token);
+      // Set access token immediately so API calls in the welcome modal work.
+      setAccessToken(token);
     },
   });
 };
