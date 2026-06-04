@@ -1,5 +1,6 @@
 import os
 
+from django.utils.text import slugify
 from rest_framework import serializers
 
 from .models import Category, InventoryItem, ItemImage
@@ -9,6 +10,27 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ("id", "slug", "name", "parent")
+
+
+class CategoryCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=120, trim_whitespace=True)
+
+    def validate_name(self, value):
+        slug = slugify(value)
+
+        if not slug:
+            raise serializers.ValidationError("Category name must produce a valid slug.")
+
+        return value
+
+    def get_or_create(self):
+        name = self.validated_data["name"]
+        slug = slugify(name)
+        category, created = Category.objects.get_or_create(
+            slug=slug,
+            defaults={"name": name},
+        )
+        return category, created
 
 
 class ItemImageSerializer(serializers.ModelSerializer):

@@ -14,8 +14,8 @@ import { useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { FiImage, FiX } from "react-icons/fi";
-import { useCategories, useCreateItem, useUpdateItem } from "api/stock-finder";
+import { FiImage, FiPlus, FiX } from "react-icons/fi";
+import { useCategories, useCreateCategory, useCreateItem, useUpdateItem } from "api/stock-finder";
 import type { SfItem } from "api/stock-finder";
 import api from "api/api";
 import type { ApiResponse } from "api/types";
@@ -90,6 +90,7 @@ const uploadFilesToItem = async (itemId: string, files: PendingFile[]) => {
 
 export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
   const { data: categories = [] } = useCategories();
+  const createCategory = useCreateCategory();
   const createItem = useCreateItem();
   const updateItem = useUpdateItem();
 
@@ -98,11 +99,14 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [isUploadingPending, setIsUploadingPending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ItemFormValues>({
     resolver: zodResolver(itemSchema),
@@ -162,6 +166,19 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
   };
 
   const isBusy = isSubmitting || isUploadingPending;
+
+  const handleCreateCategory = async (setValue: (name: "category", value: string) => void) => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    try {
+      const res = await createCategory.mutateAsync(trimmed);
+      setValue("category", res.data.data.id);
+      setNewCategoryName("");
+      setShowNewCategory(false);
+    } catch {
+      toaster.error({ title: "Failed to create category" });
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -279,7 +296,49 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
         </SimpleGrid>
 
         <Field.Root invalid={!!errors.category}>
-          <Field.Label>Category *</Field.Label>
+          <HStack justify="space-between" align="center" w="full">
+            <Field.Label mb={0}>Category *</Field.Label>
+            <Button
+              size="2xs"
+              variant="ghost"
+              onClick={() => setShowNewCategory((v) => !v)}
+              type="button"
+            >
+              <FiPlus /> New
+            </Button>
+          </HStack>
+          {showNewCategory && (
+            <HStack w="full" gap={2}>
+              <Input
+                size="sm"
+                placeholder="e.g. Electronics"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleCreateCategory(setValue);
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                loading={createCategory.isPending}
+                onClick={() => void handleCreateCategory(setValue)}
+                type="button"
+              >
+                Add
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setShowNewCategory(false); setNewCategoryName(""); }}
+                type="button"
+              >
+                <FiX />
+              </Button>
+            </HStack>
+          )}
           <Controller
             name="category"
             control={control}
