@@ -19,22 +19,21 @@ class CustomJSONRenderer(JSONRenderer):
     charset = "utf-8"
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        response = None
-
-        if renderer_context:
-            response = renderer_context.get("response", None)
+        response = renderer_context.get("response") if renderer_context else None
 
         if response and response.status_code == status.HTTP_204_NO_CONTENT:
             return b""
 
+        # Views already return a fully-formed envelope {"meta": {...}, "data": ...}.
+        # Pass it straight through so the message and data are not lost.
+        if isinstance(data, dict) and "meta" in data and "data" in data:
+            return json.dumps(data, cls=GeoJSONEncoder, ensure_ascii=False)
+
+        # Bare DRF error responses (e.g. from the exception handler or
+        # third-party middleware) only have "detail" at the top level.
         message = ""
-        response_data_body = {}
-
-        if response and hasattr(response, "data") and isinstance(response.data, dict):
-            message = response.data.pop("message", "") or str(response.data.pop("detail", ""))
-            data = response.data
-
         if isinstance(data, dict):
+            message = str(data.pop("detail", ""))
             response_data_body = data.get("data", data)
         else:
             response_data_body = data
@@ -42,9 +41,7 @@ class CustomJSONRenderer(JSONRenderer):
         response_data = {
             "meta": {
                 "status_code": response.status_code if response else status.HTTP_200_OK,
-                "success": response.status_code < status.HTTP_400_BAD_REQUEST
-                if response
-                else True,
+                "success": (response.status_code < status.HTTP_400_BAD_REQUEST) if response else True,
                 "message": message,
             },
             "data": response_data_body,

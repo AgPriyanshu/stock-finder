@@ -23,9 +23,11 @@ export const ShopDetailsStep = ({
   defaultPhone,
   onNext,
 }: ShopDetailsStepProps) => {
-  const rawDefault = defaultPhone.replace("+91", "");
+  const rawDefault = defaultPhone.replace("+91", "").replace(/\D/g, "");
+  const phoneVerified = PHONE_REGEX.test(rawDefault);
+
   const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState(PHONE_REGEX.test(rawDefault) ? rawDefault : "");
+  const [whatsapp, setWhatsapp] = useState(phoneVerified ? rawDefault : "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = (): boolean => {
@@ -34,10 +36,12 @@ export const ShopDetailsStep = ({
     if (trimmed.length < NAME_MIN || trimmed.length > NAME_MAX) {
       next.name = `Shop name must be ${NAME_MIN}–${NAME_MAX} characters.`;
     }
-    if (!whatsapp) {
-      next.whatsapp = "Mobile number is required.";
-    } else if (!PHONE_REGEX.test(whatsapp)) {
-      next.whatsapp = "Enter a valid 10-digit Indian mobile number.";
+    if (!phoneVerified) {
+      if (!whatsapp) {
+        next.whatsapp = "Mobile number is required.";
+      } else if (!PHONE_REGEX.test(whatsapp)) {
+        next.whatsapp = "Enter a valid 10-digit Indian mobile number.";
+      }
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -73,32 +77,34 @@ export const ShopDetailsStep = ({
         {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
       </Field.Root>
 
-      <Field.Root invalid={!!errors.whatsapp} w="full">
-        <Field.Label>WhatsApp number</Field.Label>
-        <InputGroup startElement={<Text fontSize="sm">+91</Text>}>
-          <Input
-            pl={10}
-            type="tel"
-            inputMode="numeric"
-            placeholder="9876543210"
-            maxLength={10}
-            value={whatsapp}
-            onChange={(e) =>
-              setWhatsapp(e.target.value.replace(/\D/g, "").slice(0, 10))
-            }
-          />
-        </InputGroup>
-        {errors.whatsapp && (
-          <Field.ErrorText>{errors.whatsapp}</Field.ErrorText>
-        )}
-      </Field.Root>
+      {!phoneVerified && (
+        <Field.Root invalid={!!errors.whatsapp} w="full">
+          <Field.Label>WhatsApp number</Field.Label>
+          <InputGroup startElement={<Text fontSize="sm">+91</Text>}>
+            <Input
+              pl={10}
+              type="tel"
+              inputMode="numeric"
+              placeholder="9876543210"
+              maxLength={10}
+              value={whatsapp}
+              onChange={(e) =>
+                setWhatsapp(e.target.value.replace(/\D/g, "").slice(0, 10))
+              }
+            />
+          </InputGroup>
+          {errors.whatsapp && (
+            <Field.ErrorText>{errors.whatsapp}</Field.ErrorText>
+          )}
+        </Field.Root>
+      )}
 
       <Button
         w="full"
         bg="intent.primary"
         color="text.onIntent"
         onClick={handleNext}
-        disabled={!name.trim() || whatsapp.length !== 10}
+        disabled={!name.trim() || (!phoneVerified && whatsapp.length !== 10)}
       >
         Next — pin your location
       </Button>

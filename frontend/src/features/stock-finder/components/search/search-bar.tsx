@@ -7,10 +7,21 @@ import {
   InputGroup,
   Text,
 } from "@chakra-ui/react";
-import { startTransition, useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FiArrowRight, FiSearch, FiTag, FiX } from "react-icons/fi";
-import type { SfAutocompleteSuggestion } from "api/stock-finder";
-import { useSearchAutocomplete } from "api/stock-finder";
+import { useCatalogItems, useSearchAutocomplete } from "api/stock-finder";
+
+interface FlatSuggestion {
+  name: string;
+  thumbnail: string | null;
+  type: "item" | "category";
+  categoryName: string | null;
+}
+
+interface SuggestionGroup {
+  label: string;
+  items: FlatSuggestion[];
+}
 
 interface SearchBarProps {
   value: string;
@@ -20,6 +31,7 @@ interface SearchBarProps {
 export const SearchBar = ({ value, onChange }: SearchBarProps) => {
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -27,7 +39,40 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
     startTransition(() => setDraft(value));
   }, [value]);
 
-  const { data: suggestions = [] } = useSearchAutocomplete(draft);
+  const { data: autocompleteSuggestions = [] } = useSearchAutocomplete(draft);
+  const { data: catalogItems = [] } = useCatalogItems("", undefined, {
+    enabled: focused && draft.trim().length === 0,
+  });
+
+  const flatSuggestions: FlatSuggestion[] = useMemo(() => {
+    if (draft.trim().length >= 2) {
+      return autocompleteSuggestions.map((s) => ({
+        name: s.name,
+        thumbnail: s.thumbnail,
+        type: s.type,
+        categoryName: s.type === "category" ? "Category" : null,
+      }));
+    }
+    return catalogItems.map((item) => ({
+      name: item.name,
+      thumbnail: null,
+      type: "item" as const,
+      categoryName: item.categoryName ?? "Uncategorised",
+    }));
+  }, [draft, autocompleteSuggestions, catalogItems]);
+
+  const groups: SuggestionGroup[] = useMemo(() => {
+    const map = new Map<string, FlatSuggestion[]>();
+    for (const s of flatSuggestions) {
+      const label = s.categoryName ?? "Other";
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(s);
+    }
+    return Array.from(map.entries()).map(([label, items]) => ({ label, items }));
+  }, [flatSuggestions]);
+
+  // Flat index across all groups for keyboard nav.
+  const suggestions = flatSuggestions;
 
   const commit = useCallback(
     (text: string) => {
@@ -57,7 +102,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, []);
 
-  const selectSuggestion = (suggestion: SfAutocompleteSuggestion) => {
+  const selectSuggestion = (suggestion: FlatSuggestion) => {
     setDraft(suggestion.name);
     commit(suggestion.name);
   };
@@ -130,7 +175,8 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
             setOpen(true);
             setActiveIndex(-1);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => { setFocused(true); setOpen(true); }}
+          onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder="Search products..."
           size="lg"
@@ -151,62 +197,78 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
           borderColor="border.default"
           borderRadius="md"
           shadow="lg"
-          overflow="hidden"
+          maxH="calc(5 * 44px)"
+          overflowY="auto"
         >
-          {suggestions.map((suggestion, index) => (
-            <Box
-              key={suggestion.name}
-              px={3}
-              py={2}
-              cursor="pointer"
-              bg={index === activeIndex ? "bg.muted" : "transparent"}
-              _hover={{ bg: "bg.muted" }}
-              display="flex"
-              alignItems="center"
-              gap={3}
-              onMouseDown={(event) => {
-                // Prevent input blur before click registers.
-                event.preventDefault();
-                selectSuggestion(suggestion);
-              }}
-            >
-              <Box
-                flexShrink={0}
-                w="32px"
-                h="32px"
-                borderRadius="sm"
-                overflow="hidden"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                bg="bg.subtle"
-              >
-                {suggestion.thumbnail ? (
-                  <Image
-                    src={suggestion.thumbnail}
-                    alt={suggestion.name}
-                    w="full"
-                    h="full"
-                    objectFit="cover"
-                  />
-                ) : suggestion.type === "category" ? (
-                  <FiTag size={14} color="var(--chakra-colors-fg-muted)" />
-                ) : (
-                  <FiSearch size={14} color="var(--chakra-colors-fg-muted)" />
-                )}
-              </Box>
-              <Box flex={1} minW={0}>
-                <Text fontSize="sm" truncate>
-                  {suggestion.name}
+          {(() => {
+            let flatIndex = 0;
+            return groups.map((group) => (
+              <Box key={group.label}>
+                <Text
+                  px={3}
+                  pt={2}
+                  pb={1}
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  color="fg.muted"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                >
+                  {group.label}
                 </Text>
-                {suggestion.type === "category" && (
-                  <Text fontSize="xs" color="fg.muted">
-                    Category
-                  </Text>
-                )}
+                {group.items.map((suggestion) => {
+                  const idx = flatIndex++;
+                  return (
+                    <Box
+                      key={suggestion.name}
+                      px={3}
+                      py={2}
+                      cursor="pointer"
+                      bg={idx === activeIndex ? "bg.muted" : "transparent"}
+                      _hover={{ bg: "bg.muted" }}
+                      display="flex"
+                      alignItems="center"
+                      gap={3}
+                      h="44px"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        selectSuggestion(suggestion);
+                      }}
+                    >
+                      <Box
+                        flexShrink={0}
+                        w="28px"
+                        h="28px"
+                        borderRadius="sm"
+                        overflow="hidden"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        bg="bg.subtle"
+                      >
+                        {suggestion.thumbnail ? (
+                          <Image
+                            src={suggestion.thumbnail}
+                            alt={suggestion.name}
+                            w="full"
+                            h="full"
+                            objectFit="cover"
+                          />
+                        ) : suggestion.type === "category" ? (
+                          <FiTag size={13} color="var(--chakra-colors-fg-muted)" />
+                        ) : (
+                          <FiSearch size={13} color="var(--chakra-colors-fg-muted)" />
+                        )}
+                      </Box>
+                      <Text fontSize="sm" truncate flex={1}>
+                        {suggestion.name}
+                      </Text>
+                    </Box>
+                  );
+                })}
               </Box>
-            </Box>
-          ))}
+            ));
+          })()}
         </Box>
       )}
     </Box>

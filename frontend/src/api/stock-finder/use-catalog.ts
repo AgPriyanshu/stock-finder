@@ -3,7 +3,11 @@ import api from "api/api";
 import type { ApiResponse } from "api/types";
 import type { SfCatalogItem } from "./types";
 
-export const useCatalogItems = (q: string, categoryId?: string) => {
+export const useCatalogItems = (
+  q: string,
+  categoryId?: string,
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ["stock-finder", "catalog", q, categoryId ?? ""],
     queryFn: async () => {
@@ -12,7 +16,7 @@ export const useCatalogItems = (q: string, categoryId?: string) => {
       return api.get<ApiResponse<SfCatalogItem[]>>("/catalog/", { params });
     },
     select: (r) => r.data.data,
-    enabled: q.length >= 2,
+    enabled: options?.enabled ?? q.length >= 2,
     staleTime: 1000 * 30,
   });
 };

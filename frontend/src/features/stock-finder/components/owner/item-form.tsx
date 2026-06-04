@@ -279,6 +279,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
               <Input
                 {...register("name")}
                 placeholder="Item name"
+                autoComplete="off"
                 readOnly={catalogLocked}
                 bg={catalogLocked ? "bg.muted" : undefined}
                 value={nameQuery}
@@ -333,7 +334,8 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
                     py={2}
                     cursor="pointer"
                     _hover={{ bg: "bg.muted" }}
-                    onMouseDown={() => {
+                    onMouseDown={(e) => {
+                      e.preventDefault();
                       setNameQuery(item.name);
                       setValue("name", item.name);
                       if (item.category) setValue("category", item.category);

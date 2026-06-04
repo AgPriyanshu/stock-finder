@@ -7,15 +7,21 @@ def envelope_exception_handler(exc, context):
     if response is None:
         return None
 
+    # Extract a human-readable message from the DRF error structure.
     detail = response.data
-    message = ""
-
     if isinstance(detail, dict):
         message = str(detail.get("detail", ""))
+        # Field-level validation errors — collect first message per field.
+        if not message:
+            parts = []
+            for field, errors in detail.items():
+                first = errors[0] if isinstance(errors, list) and errors else errors
+                parts.append(f"{field}: {first}")
+            message = "; ".join(parts)
     elif isinstance(detail, list):
         message = str(detail[0]) if detail else ""
-    elif isinstance(detail, str):
-        message = detail
+    else:
+        message = str(detail)
 
     response.data = {
         "meta": {
@@ -23,7 +29,7 @@ def envelope_exception_handler(exc, context):
             "success": False,
             "message": message,
         },
-        "data": detail,
+        "data": None,
     }
 
     return response

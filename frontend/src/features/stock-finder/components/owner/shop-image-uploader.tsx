@@ -10,7 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import { FiImage, FiTrash2 } from "react-icons/fi";
+import { FiImage, FiX } from "react-icons/fi";
 import type { SfShopImage } from "api/stock-finder";
 import {
   useConfirmShopImage,
@@ -72,6 +72,7 @@ export const ShopImageUploader = ({ images }: ShopImageUploaderProps) => {
   const presignImage = usePresignShopImage();
   const confirmImage = useConfirmShopImage();
   const deleteImage = useDeleteShopImage();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const setUpload = (id: string, patch: Partial<UploadProgress>) => {
     setUploads((current) =>
@@ -137,10 +138,13 @@ export const ShopImageUploader = ({ images }: ShopImageUploaderProps) => {
   };
 
   const handleDelete = async (imageId: string) => {
+    setDeletingId(imageId);
     try {
       await deleteImage.mutateAsync(imageId);
     } catch {
       toaster.error({ title: "Failed to delete photo" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -237,13 +241,18 @@ export const ShopImageUploader = ({ images }: ShopImageUploaderProps) => {
                   top={2}
                   right={2}
                   size="2xs"
-                  variant="ghost"
-                  colorPalette="red"
+                  variant="solid"
+                  bg="white"
+                  color="red.500"
+                  borderRadius="full"
+                  shadow="sm"
                   aria-label="Delete photo"
-                  loading={deleteImage.isPending}
+                  loading={deletingId === image.id}
+                  disabled={deletingId !== null}
                   onClick={() => void handleDelete(image.id)}
+                  _hover={{ bg: "red.500", color: "white" }}
                 >
-                  <FiTrash2 />
+                  <FiX />
                 </IconButton>
                 {image.isPrimary && (
                   <Badge

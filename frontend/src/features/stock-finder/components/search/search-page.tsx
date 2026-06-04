@@ -155,7 +155,7 @@ export const SearchPage = () => {
     !buyerLocation.isLoading &&
     (buyerLocation.lat === null || params.lat !== undefined);
   const searchQuery = useSearchItems(params, {
-    enabled: locationReady && !!params.q,
+    enabled: locationReady,
   });
   const items = flattenResults(searchQuery.data?.pages);
 
@@ -163,13 +163,13 @@ export const SearchPage = () => {
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
     prevLoadingRef.current = searchQuery.isLoading;
-    if (wasLoading && !searchQuery.isLoading && items.length === 0) {
+    if (wasLoading && !searchQuery.isLoading && items.length === 0 && !!params.q) {
       toaster.info({
         title: "No results found",
         description: "Try a different keyword, category, or location.",
       });
     }
-  }, [searchQuery.isLoading, items.length]);
+  }, [searchQuery.isLoading, items.length, params.q]);
 
   const locationLabel =
     customLocationLabel ??
@@ -306,7 +306,6 @@ export const SearchPage = () => {
             lng={params.lng}
             myLat={params.lat ?? null}
             myLng={params.lng ?? null}
-            radiusKm={params.radiusKm}
             isVisible={view === "map"}
             hasQuery={!!params.q}
           />
