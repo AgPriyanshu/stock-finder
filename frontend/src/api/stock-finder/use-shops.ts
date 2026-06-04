@@ -13,6 +13,15 @@ import type {
   SfShopWithDistance,
 } from "./types";
 
+export const useShopStats = () => {
+  return useQuery({
+    queryKey: ["stock-finder", "shop-stats"],
+    queryFn: async () => api.get<ApiResponse<{ shopCount: number }>>("/shops/stats/"),
+    select: (r) => r.data.data,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 export const useMyShop = () => {
   return useQuery({
     queryKey: QueryKeys.stockFinder.myShop,

@@ -27,7 +27,7 @@ class ShopViewSet(viewsets.ViewSet):
     authentication_classes = [JWTBearerAuthentication]
 
     def get_permissions(self):
-        if self.action in ("retrieve", "nearby", "items"):
+        if self.action in ("retrieve", "nearby", "items", "stats"):
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -178,6 +178,14 @@ class ShopViewSet(viewsets.ViewSet):
         data = ShopWithDistanceSerializer(qs, many=True).data
         nearby_cache_set(lat, lng, radius_km, data)
         return Response({"shops": data})
+
+    @action(detail=False, methods=["get"], url_path="stats", permission_classes=[AllowAny])
+    def stats(self, request):
+        count = Shop.objects.count()
+        return Response(
+            {"meta": {"status_code": 200, "success": True, "message": ""}, "data": {"shopCount": count}},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["get"], permission_classes=[AllowAny])
     def items(self, request, pk=None):

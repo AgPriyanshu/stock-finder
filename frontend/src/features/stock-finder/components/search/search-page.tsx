@@ -5,13 +5,13 @@ import { toaster } from "design-system/toaster/toaster-instance";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useSeo } from "shared/hooks/use-seo";
-import { BrandHeading } from "../brand-heading";
 import {
   getOwnerToken,
   getSavedSearchLocation,
   setSavedSearchLocation,
 } from "shared/local-storage";
 import { useBuyerLocation } from "../../hooks/use-buyer-location";
+import { BrandHeading } from "../brand-heading";
 import { ViewToggle, type SearchView } from "./_view-toggle";
 import { FilterChips } from "./filter-chips";
 import { LocationPickerDialog } from "./location-picker-dialog";
@@ -30,7 +30,7 @@ export const SearchPage = () => {
   const navigate = useNavigate();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [customLocationLabel, setCustomLocationLabel] = useState<string | null>(
-    () => getSavedSearchLocation()?.label ?? null
+    () => getSavedSearchLocation()?.label ?? null,
   );
 
   const view = (searchParams.get("view") || "map") as SearchView;
@@ -45,7 +45,7 @@ export const SearchPage = () => {
       maxPrice: numberParam(searchParams.get("maxPrice")),
       sort: (searchParams.get("sort") as SfSearchParams["sort"]) || "distance",
     }),
-    [searchParams]
+    [searchParams],
   );
 
   useEffect(() => {
@@ -107,7 +107,7 @@ export const SearchPage = () => {
       });
       setSearchParams(next);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   const handleLocationConfirm = useCallback(
@@ -118,7 +118,7 @@ export const SearchPage = () => {
       try {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`,
-          { headers: { "Accept-Language": "en" } }
+          { headers: { "Accept-Language": "en" } },
         );
         const data = (await response.json()) as {
           address?: {
@@ -145,7 +145,7 @@ export const SearchPage = () => {
         // Keep "Custom location" as fallback.
       }
     },
-    [updateParams]
+    [updateParams],
   );
 
   // Wait for location to resolve. If a location was found, also wait until
@@ -163,7 +163,12 @@ export const SearchPage = () => {
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
     prevLoadingRef.current = searchQuery.isLoading;
-    if (wasLoading && !searchQuery.isLoading && items.length === 0 && !!params.q) {
+    if (
+      wasLoading &&
+      !searchQuery.isLoading &&
+      items.length === 0 &&
+      !!params.q
+    ) {
       toaster.info({
         title: "No results found",
         description: "Try a different keyword, category, or location.",
@@ -195,7 +200,11 @@ export const SearchPage = () => {
         px={{ base: 3, md: 4 }}
         py={{ base: 2, md: 3 }}
       >
-        <HStack justify="center" mb={{ base: 2, md: 3 }} mt={{ base: 2, md: 3 }}>
+        <HStack
+          justify="center"
+          mb={{ base: 2, md: 3 }}
+          mt={{ base: 2, md: 3 }}
+        >
           <Link to="/">
             <BrandHeading size="2xl" />
           </Link>
@@ -252,26 +261,20 @@ export const SearchPage = () => {
                 <Text fontSize="xs" color="fg.muted" whiteSpace="nowrap">
                   Shop owner
                 </Text>
-                <Button
-                  size="xs"
-                  onClick={() => navigate("/owner/inventory")}
-                >
+                <Button size="xs" onClick={() => navigate("/owner/inventory")}>
                   My inventory
                 </Button>
               </>
             ) : (
               <>
                 <Text fontSize="xs" color="fg.muted" whiteSpace="nowrap">
-                  Shop owner?
+                  Get your business discovered. List it free
                 </Text>
                 <HStack gap={2}>
                   <Button asChild size="xs" variant="outline">
                     <Link to="/register">Sign up</Link>
                   </Button>
-                  <Button
-                    size="xs"
-                    onClick={() => navigate("/login")}
-                  >
+                  <Button size="xs" onClick={() => navigate("/login")}>
                     Login
                   </Button>
                 </HStack>
