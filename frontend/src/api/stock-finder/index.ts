@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./use-analytics";
+export * from "./use-catalog";
 export * from "./use-categories";
 export * from "./use-images";
 export * from "./use-items";

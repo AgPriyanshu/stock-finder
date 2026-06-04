@@ -14,6 +14,7 @@ urlpatterns = [
     path("auth/", include("apps.owner_manager.urls")),
     path("shops/", include("apps.shop_manager.urls")),
     path("categories/", include("apps.inventory_manager.urls.categories")),
+    path("catalog/", include("apps.inventory_manager.urls.catalog")),
     path("items/", include("apps.inventory_manager.urls.items")),
     path("search/", include("apps.inventory_manager.urls.search")),
     path("leads/", include("apps.lead_manager.urls.leads")),

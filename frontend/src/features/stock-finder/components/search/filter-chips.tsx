@@ -10,8 +10,6 @@ interface FilterChipsProps {
   onEditLocation?: () => void;
 }
 
-const DISTANCES = [1, 5, 10, 25];
-
 const selectStyle: React.CSSProperties = {
   padding: "5px 10px",
   borderRadius: 6,
@@ -42,18 +40,6 @@ export const FilterChips = ({
         {locationLabel}
       </Button>
     )}
-
-    {DISTANCES.map((distance) => (
-      <Button
-        key={distance}
-        size="xs"
-        variant={params.radiusKm === distance ? "solid" : "outline"}
-        onClick={() => onChange({ radiusKm: distance })}
-        flexShrink={0}
-      >
-        {distance}km
-      </Button>
-    ))}
 
     <select
       value={params.category || ""}

@@ -4,11 +4,8 @@ djangorestframework>=3.15,<4.0
 django-cors-headers>=4.4,<5.0
 whitenoise>=6.7,<7.0
 
-# ASGI + WebSockets.
+# ASGI server.
 uvicorn[standard]>=0.30,<1.0
-daphne>=4.1,<5.0
-channels>=4.1,<5.0
-channels_redis>=4.2,<5.0
 
 # Database.
 psycopg[binary]>=3.1,<4.0

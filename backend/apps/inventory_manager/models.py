@@ -102,6 +102,30 @@ class ItemImage(BaseModelWithoutUser):
         ordering = ["position"]
 
 
+class CatalogItem(BaseModelWithoutUser):
+    name = models.CharField(max_length=200)
+    name_normalized = models.CharField(max_length=200)
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="catalog_items",
+    )
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name_normalized", "category"],
+                name="sf_catalog_unique_name_category",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class SearchLog(BaseModelWithoutUser):
     query = models.CharField(max_length=200)
     location = gis_models.PointField(

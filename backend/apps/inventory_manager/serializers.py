@@ -3,13 +3,22 @@ import os
 from django.utils.text import slugify
 from rest_framework import serializers
 
-from .models import Category, InventoryItem, ItemImage
+from .models import CatalogItem, Category, InventoryItem, ItemImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ("id", "slug", "name", "parent")
+
+
+class CatalogItemSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+    category_slug = serializers.SlugField(source="category.slug", read_only=True)
+
+    class Meta:
+        model = CatalogItem
+        fields = ("id", "name", "category", "category_name", "category_slug")
 
 
 class CategoryCreateSerializer(serializers.Serializer):

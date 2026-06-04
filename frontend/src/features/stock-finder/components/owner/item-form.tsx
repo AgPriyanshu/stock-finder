@@ -15,8 +15,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { FiImage, FiPlus, FiX } from "react-icons/fi";
-import { useCategories, useCreateCategory, useCreateItem, useUpdateItem } from "api/stock-finder";
-import type { SfItem } from "api/stock-finder";
+import { useCatalogItems, useCategories, useCreateCategory, useCreateItem, useUpdateItem } from "api/stock-finder";
+import type { SfCatalogItem, SfItem } from "api/stock-finder";
 import api from "api/api";
 import type { ApiResponse } from "api/types";
 import { ImageUploader } from "./image-uploader";
@@ -101,6 +101,13 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [nameQuery, setNameQuery] = useState(initialData?.name ?? "");
+  const [catalogLocked, setCatalogLocked] = useState(!!initialData);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const { data: catalogSuggestions = [] } = useCatalogItems(
+    catalogLocked ? "" : nameQuery,
+  );
 
   const {
     register,
@@ -267,7 +274,82 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
 
         <Field.Root invalid={!!errors.name}>
           <Field.Label>Name *</Field.Label>
-          <Input {...register("name")} placeholder="Item name" />
+          <Box position="relative" w="full">
+            <HStack gap={0}>
+              <Input
+                {...register("name")}
+                placeholder="Item name"
+                readOnly={catalogLocked}
+                bg={catalogLocked ? "bg.muted" : undefined}
+                value={nameQuery}
+                onChange={(e) => {
+                  if (catalogLocked) return;
+                  const v = e.target.value;
+                  setNameQuery(v);
+                  setValue("name", v);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => { if (!catalogLocked) setShowSuggestions(true); }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                borderRightRadius={catalogLocked ? 0 : undefined}
+              />
+              {catalogLocked && !isEditing && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  borderLeftRadius={0}
+                  onClick={() => {
+                    setCatalogLocked(false);
+                    setNameQuery("");
+                    setValue("name", "");
+                  }}
+                  type="button"
+                  aria-label="Clear catalog selection"
+                >
+                  <FiX />
+                </Button>
+              )}
+            </HStack>
+            {showSuggestions && catalogSuggestions.length > 0 && (
+              <Box
+                position="absolute"
+                top="100%"
+                left={0}
+                right={0}
+                zIndex={10}
+                bg="bg.panel"
+                borderWidth="1px"
+                borderColor="border.default"
+                borderRadius="md"
+                shadow="md"
+                mt={1}
+                maxH="200px"
+                overflowY="auto"
+              >
+                {catalogSuggestions.map((item: SfCatalogItem) => (
+                  <Box
+                    key={item.id}
+                    px={3}
+                    py={2}
+                    cursor="pointer"
+                    _hover={{ bg: "bg.muted" }}
+                    onMouseDown={() => {
+                      setNameQuery(item.name);
+                      setValue("name", item.name);
+                      if (item.category) setValue("category", item.category);
+                      setCatalogLocked(true);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <Text fontSize="sm" fontWeight="medium">{item.name}</Text>
+                    {item.categoryName && (
+                      <Text fontSize="xs" color="fg.muted">{item.categoryName}</Text>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
           {errors.name && (
             <Field.ErrorText>{errors.name.message}</Field.ErrorText>
           )}

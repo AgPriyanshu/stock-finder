@@ -63,7 +63,7 @@ def build_search_qs(
 
     if lat is not None and lng is not None:
         point = Point(lng, lat, srid=4326)
-        qs = qs.filter(shop__location__dwithin=(point, D(km=radius_km)))
+        # qs = qs.filter(shop__location__dwithin=(point, D(km=radius_km)))
         qs = qs.annotate(distance=Distance("shop__location", point))
 
     if q:

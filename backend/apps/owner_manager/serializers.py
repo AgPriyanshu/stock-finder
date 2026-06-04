@@ -37,6 +37,9 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
+    def validate_username(self, value):
+        return value.strip().lower()
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField()

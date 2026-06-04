@@ -5,6 +5,14 @@ export interface SfCategory {
   parent: string | null;
 }
 
+export interface SfCatalogItem {
+  id: string;
+  name: string;
+  category: string | null;
+  categoryName: string | null;
+  categorySlug: string | null;
+}
+
 export interface SfShopImage {
   id: string;
   position: number;

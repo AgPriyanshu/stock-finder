@@ -13,10 +13,8 @@ DEBUG = os.environ.get("DEBUG", "0") == "1"
 ALLOWED_HOSTS = ["*"]
 
 ASGI_APPLICATION = "stock_finder.asgi.application"
-WSGI_APPLICATION = "stock_finder.wsgi.application"
 
 INSTALLED_APPS = [
-    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -26,7 +24,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "django.contrib.gis",
     "django.contrib.postgres",
-    "channels",
     "rest_framework",
     "rest_framework.authtoken",
     "apps.owner_manager.apps.OwnerManagerConfig",
@@ -124,20 +121,6 @@ CACHES = {
     },
 }
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [
-                (
-                    os.environ.get("REDIS_HOST", "redis"),
-                    int(os.environ.get("REDIS_PORT", "6379")),
-                )
-            ],
-            "symmetric_encryption_keys": [SECRET_KEY],
-        },
-    },
-}
 
 CELERY_BROKER_URL = (
     f"redis://{os.environ.get('REDIS_HOST', 'redis')}"
