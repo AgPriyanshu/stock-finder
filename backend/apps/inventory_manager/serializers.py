@@ -7,9 +7,23 @@ from .models import CatalogItem, Category, InventoryItem, ItemImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
-        fields = ("id", "slug", "name", "parent")
+        fields = ("id", "slug", "name", "parent", "image_url")
+
+    def get_image_url(self, obj):
+        if not obj.image_key:
+            return None
+
+        base = os.environ.get("S3_PUBLIC_ENDPOINT", "").rstrip("/")
+        bucket = os.environ.get("S3_BUCKET", "")
+
+        if not (base and bucket):
+            return None
+
+        return f"{base}/{bucket}/{obj.image_key}"
 
 
 class CatalogItemSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Image } from "@chakra-ui/react";
 import type { IconType } from "react-icons";
 import {
   FiAlertTriangle,
@@ -118,13 +118,29 @@ interface ItemPlaceholderProps {
   categorySlug?: string | null;
   itemName?: string;
   minH?: string | number;
+  categoryImageUrl?: string | null;
 }
 
 export const ItemPlaceholder = ({
   categorySlug,
   itemName,
   minH = "132px",
+  categoryImageUrl,
 }: ItemPlaceholderProps) => {
+  if (categoryImageUrl) {
+    return (
+      <Image
+        className="item-placeholder"
+        src={categoryImageUrl}
+        alt=""
+        w="full"
+        h="full"
+        minH={minH}
+        objectFit="cover"
+      />
+    );
+  }
+
   const { Icon, bg, fg } = resolveVisual(categorySlug, itemName);
 
   return (

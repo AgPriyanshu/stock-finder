@@ -18,6 +18,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import type { SfSearchItem } from "api/stock-finder";
+import { useCategories } from "api/stock-finder";
 import { ItemPlaceholder } from "../item-placeholder";
 
 interface MapItemCarouselProps {
@@ -42,9 +43,13 @@ export const MapItemCarousel = ({
 }: MapItemCarouselProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { data: categories } = useCategories();
   const item = items[activeIndex];
   if (!item) return null;
 
+  const categoryImageUrl = item.category
+    ? (categories?.find((c) => c.id === item.category)?.imageUrl ?? null)
+    : null;
   const primaryImage =
     item.images.find((img) => img.isPrimary)?.cardUrl ??
     item.images[0]?.cardUrl ??
@@ -142,6 +147,7 @@ export const MapItemCarousel = ({
                   categorySlug={item.categorySlug}
                   itemName={item.name}
                   minH="110px"
+                  categoryImageUrl={categoryImageUrl}
                 />
               )}
             </Box>

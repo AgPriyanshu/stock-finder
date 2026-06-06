@@ -17,6 +17,7 @@ class Category(BaseModelWithoutUser):
         on_delete=models.SET_NULL,
         related_name="children",
     )
+    image_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
         verbose_name_plural = "Categories"

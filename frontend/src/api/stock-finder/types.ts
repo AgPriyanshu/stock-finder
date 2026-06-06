@@ -3,6 +3,7 @@ export interface SfCategory {
   slug: string;
   name: string;
   parent: string | null;
+  imageUrl: string | null;
 }
 
 export interface SfCatalogItem {

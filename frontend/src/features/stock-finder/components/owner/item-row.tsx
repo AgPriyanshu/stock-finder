@@ -17,7 +17,7 @@ import { FiMoreVertical, FiEdit2, FiRefreshCw, FiTrash2 } from "react-icons/fi";
 import { ItemPlaceholder } from "../item-placeholder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import type { SfItem } from "api/stock-finder";
-import { useRefreshItem, useDeleteItem } from "api/stock-finder";
+import { useRefreshItem, useDeleteItem, useCategories } from "api/stock-finder";
 import { StatusBadge } from "./_status-badge";
 
 interface ItemRowProps {
@@ -79,6 +79,10 @@ const ItemActions = ({
 export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
   const refreshItem = useRefreshItem();
   const deleteItem = useDeleteItem();
+  const { data: categories } = useCategories();
+  const categoryImageUrl = item.category
+    ? (categories?.find((c) => c.id === item.category)?.imageUrl ?? null)
+    : null;
 
   const handleRefresh = async () => {
     try {
@@ -143,7 +147,7 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
                   objectFit="cover"
                 />
               ) : (
-                <ItemPlaceholder itemName={item.name} minH="100%" />
+                <ItemPlaceholder itemName={item.name} minH="100%" categoryImageUrl={categoryImageUrl} />
               )}
             </Box>
             <VStack align="start" gap={1} minW={0} flex={1}>
@@ -183,7 +187,7 @@ export const ItemRow = ({ item, onEdit, isMobile }: ItemRowProps) => {
                 objectFit="cover"
               />
             ) : (
-              <ItemPlaceholder itemName={item.name} minH="40px" />
+              <ItemPlaceholder itemName={item.name} minH="40px" categoryImageUrl={categoryImageUrl} />
             )}
           </Box>
           <Text fontWeight="medium" lineClamp={1}>

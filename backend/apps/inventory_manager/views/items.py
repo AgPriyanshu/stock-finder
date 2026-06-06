@@ -192,6 +192,9 @@ class InventoryItemViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
 
+    def partial_update(self, request, pk=None):
+        return self.update(request, pk=pk)
+
     def destroy(self, request, pk=None):
         item = self._get_item_or_404(request, pk)
 

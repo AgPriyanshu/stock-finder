@@ -15,6 +15,7 @@ import {
   FiShoppingBag,
 } from "react-icons/fi";
 import type { SfSearchItem } from "api/stock-finder";
+import { useCategories } from "api/stock-finder";
 import { ItemPlaceholder } from "../item-placeholder";
 
 interface ResultCardProps {
@@ -42,6 +43,10 @@ export const ResultCard = ({
   hideShopLink,
 }: ResultCardProps) => {
   const location = useLocation();
+  const { data: categories } = useCategories();
+  const categoryImageUrl = item.category
+    ? (categories?.find((c) => c.id === item.category)?.imageUrl ?? null)
+    : null;
   const primaryImage =
     item.images.find((image) => image.isPrimary)?.cardUrl ||
     item.images[0]?.cardUrl ||
@@ -78,6 +83,7 @@ export const ResultCard = ({
               categorySlug={item.categorySlug}
               itemName={item.name}
               minH={compact ? "96px" : "132px"}
+              categoryImageUrl={categoryImageUrl}
             />
           )}
         </Box>
