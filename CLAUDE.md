@@ -75,7 +75,7 @@ docker compose up --build
 docker compose exec web python manage.py migrate
 docker compose exec web python manage.py makemigrations
 docker compose exec web python manage.py shell
-docker compose exec web pip install <pkg>   # then update backend/requirements.txt
+uv add <pkg>                    # updates pyproject.toml + uv.lock; then rebuild the image
 ```
 
 Never run Django commands against host Python — the venv inside the container is the source of truth.

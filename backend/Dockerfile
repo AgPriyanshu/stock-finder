@@ -5,6 +5,8 @@
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm AS builder
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN set -eux; \
@@ -20,19 +22,19 @@ RUN set -eux; \
 
 WORKDIR /app
 
-# Create and activate virtualenv so the installed packages are self-contained.
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/venv
 
-COPY requirements.txt ./
+COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    set -eux; \
-    pip install --upgrade pip setuptools wheel; \
-    pip install -r requirements.txt; \
-    if command -v gdal-config >/dev/null 2>&1; then \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
+
+# GDAL's Python version must match the system library; install after uv sync.
+RUN if command -v gdal-config >/dev/null 2>&1; then \
         GDAL_VERSION=$(gdal-config --version); \
-        pip install "GDAL==${GDAL_VERSION}" || true; \
+        uv pip install "GDAL==${GDAL_VERSION}" || true; \
     fi
 
 # ---------------------------------------------------------------------------
@@ -40,12 +42,16 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm
 
+# uv is needed at runtime only for the debug compose (installing debugpy on the fly).
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
-    DJANGO_SETTINGS_MODULE=stock_finder.settings
+    DJANGO_SETTINGS_MODULE=stock_finder.settings \
+    UV_PROJECT_ENVIRONMENT=/venv
 
 # Install only the runtime system libraries (no build tools).
 RUN set -eux; \
