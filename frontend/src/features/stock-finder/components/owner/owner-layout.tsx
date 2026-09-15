@@ -11,12 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { queryClient } from "api/query-client";
 import { useState } from "react";
-import { FiBarChart2, FiInbox, FiKey, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
+import { FiBarChart2, FiHelpCircle, FiInbox, FiKey, FiLogOut, FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
 import { MdOutlineInventory2 } from "react-icons/md";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { clearOwnerToken, clearToken } from "shared/local-storage";
 import { useOwnerNotifications } from "../../hooks/use-owner-notifications";
 import { BrandHeading } from "../brand-heading";
+import { ContactSupportDialog } from "../support/contact-support-dialog";
 import { ChangePasswordModal } from "./change-password-modal";
 
 const NAV_ITEMS = [
@@ -36,6 +37,7 @@ export const OwnerLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newLeadCount, setNewLeadCount] = useState(0);
   const [changePwOpen, setChangePwOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
 
   useOwnerNotifications(() => setNewLeadCount((n) => n + 1));
@@ -117,6 +119,15 @@ export const OwnerLayout = () => {
             </HStack>
 
           <HStack gap={1}>
+            <IconButton
+              aria-label="Contact support"
+              variant="ghost"
+              size="sm"
+              color="fg.muted"
+              onClick={() => setSupportOpen(true)}
+            >
+              <FiHelpCircle />
+            </IconButton>
             <IconButton
               aria-label="Change password"
               variant="ghost"
@@ -232,6 +243,10 @@ export const OwnerLayout = () => {
       <ChangePasswordModal
         isOpen={changePwOpen}
         onClose={() => setChangePwOpen(false)}
+      />
+      <ContactSupportDialog
+        isOpen={supportOpen}
+        onClose={() => setSupportOpen(false)}
       />
     </Flex>
   );

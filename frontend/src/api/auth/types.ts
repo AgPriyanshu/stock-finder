@@ -43,6 +43,11 @@ export interface ShopSignupRequestPayload {
   city: string;
 }
 
+export interface SupportRequestPayload {
+  title: string;
+  comments: string;
+}
+
 export interface RegisterPayload {
   email: string;
   password: string;

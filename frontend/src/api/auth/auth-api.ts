@@ -4,7 +4,7 @@ import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
 import { setAccessToken, setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
-import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, PasswordResetConfirmPayload, PasswordResetRequestPayload, ReferralCode, RegisterPayload, ShopSignupRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
+import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, PasswordResetConfirmPayload, PasswordResetRequestPayload, ReferralCode, RegisterPayload, ShopSignupRequestPayload, SupportRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
 
 export const useLogin = () => {
   return useMutation({
@@ -65,6 +65,13 @@ export const useShopSignupRequest = () => {
   return useMutation({
     mutationFn: async (payload: ShopSignupRequestPayload) =>
       api.post<ApiResponse<{ received: boolean }>>("/auth/signup-request/", payload),
+  });
+};
+
+export const useSupportRequest = () => {
+  return useMutation({
+    mutationFn: async (payload: SupportRequestPayload) =>
+      api.post<ApiResponse<{ received: boolean }>>("/auth/support/", payload),
   });
 };
 

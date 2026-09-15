@@ -3,6 +3,7 @@ import type { SfSearchParams } from "api/stock-finder";
 import { useCategories, useSearchItems } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FiHelpCircle } from "react-icons/fi";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useSeo } from "shared/hooks/use-seo";
 import {
@@ -12,6 +13,7 @@ import {
 } from "shared/local-storage";
 import { useBuyerLocation } from "../../hooks/use-buyer-location";
 import { BrandHeading } from "../brand-heading";
+import { ContactSupportDialog } from "../support/contact-support-dialog";
 import { ViewToggle, type SearchView } from "./_view-toggle";
 import { FilterChips } from "./filter-chips";
 import { LocationPickerDialog } from "./location-picker-dialog";
@@ -31,6 +33,7 @@ export const SearchPage = () => {
   const { data: categories = [] } = useCategories();
   const navigate = useNavigate();
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [customLocationLabel, setCustomLocationLabel] = useState<string | null>(
     () => getSavedSearchLocation()?.label ?? null,
   );
@@ -295,6 +298,15 @@ export const SearchPage = () => {
                 </HStack>
               </>
             )}
+            <Button
+              size="xs"
+              variant="ghost"
+              color="fg.muted"
+              onClick={() => setSupportOpen(true)}
+            >
+              <FiHelpCircle />
+              Contact support
+            </Button>
           </VStack>
         </HStack>
       </Box>
@@ -332,6 +344,10 @@ export const SearchPage = () => {
         currentLng={params.lng}
         onClose={() => setLocationPickerOpen(false)}
         onConfirm={handleLocationConfirm}
+      />
+      <ContactSupportDialog
+        isOpen={supportOpen}
+        onClose={() => setSupportOpen(false)}
       />
     </VStack>
   );
