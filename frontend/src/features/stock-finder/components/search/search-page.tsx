@@ -3,7 +3,8 @@ import type { SfSearchParams } from "api/stock-finder";
 import { useCategories, useSearchItems } from "api/stock-finder";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FiHelpCircle } from "react-icons/fi";
+
+import { RiCustomerServiceLine } from "react-icons/ri";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useSeo } from "shared/hooks/use-seo";
 import {
@@ -162,8 +163,12 @@ export const SearchPage = () => {
 
   // The map plots every matching shop, so it loads all pages instead of
   // waiting for the list's infinite scroll.
-  const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
-    searchQuery;
+  const {
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+  } = searchQuery;
   useEffect(() => {
     if (view !== "map" || !hasNextPage || isFetchingNextPage) return;
     if (isFetchNextPageError || items.length >= MAP_MAX_ITEMS) return;
@@ -220,12 +225,29 @@ export const SearchPage = () => {
       >
         <HStack
           justify="center"
+          position="relative"
           mb={{ base: 2, md: 3 }}
           mt={{ base: 2, md: 3 }}
         >
           <Link to="/">
             <BrandHeading size="2xl" />
           </Link>
+          <Button
+            size="xs"
+            variant="ghost"
+            color="text.primary"
+            position="absolute"
+            right={0}
+            top="50%"
+            transform="translateY(-50%)"
+            aria-label="Contact support"
+            onClick={() => setSupportOpen(true)}
+          >
+            <RiCustomerServiceLine />
+            <Text display={{ base: "none", sm: "inline" }}>
+              Contact support
+            </Text>
+          </Button>
         </HStack>
         <HStack
           justify="space-between"
@@ -298,15 +320,6 @@ export const SearchPage = () => {
                 </HStack>
               </>
             )}
-            <Button
-              size="xs"
-              variant="ghost"
-              color="fg.muted"
-              onClick={() => setSupportOpen(true)}
-            >
-              <FiHelpCircle />
-              Contact support
-            </Button>
           </VStack>
         </HStack>
       </Box>
