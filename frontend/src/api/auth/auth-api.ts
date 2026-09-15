@@ -4,7 +4,7 @@ import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
 import { setAccessToken, setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
-import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, ReferralCode, RegisterPayload, ShopSignupRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
+import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, PasswordResetConfirmPayload, PasswordResetRequestPayload, ReferralCode, RegisterPayload, ShopSignupRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
 
 export const useLogin = () => {
   return useMutation({
@@ -44,6 +44,20 @@ export const useChangePassword = () => {
         payload
       );
     },
+  });
+};
+
+export const useRequestPasswordReset = () => {
+  return useMutation({
+    mutationFn: async (payload: PasswordResetRequestPayload) =>
+      api.post<ApiResponse<{ sent: boolean }>>("/auth/password-reset/request/", payload),
+  });
+};
+
+export const useConfirmPasswordReset = () => {
+  return useMutation({
+    mutationFn: async (payload: PasswordResetConfirmPayload) =>
+      api.post<ApiResponse<{ reset: boolean }>>("/auth/password-reset/confirm/", payload),
   });
 };
 

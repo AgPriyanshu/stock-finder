@@ -8,6 +8,16 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface PasswordResetRequestPayload {
+  email: string;
+}
+
+export interface PasswordResetConfirmPayload {
+  uid: string;
+  token: string;
+  newPassword: string;
+}
+
 export interface OwnerProfile {
   firstName: string;
   lastName: string;

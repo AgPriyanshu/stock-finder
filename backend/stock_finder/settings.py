@@ -175,6 +175,7 @@ REST_FRAMEWORK = {
         "sf_otp_request": "1/min",
         "sf_otp_verify": "5/min",
         "sf_token_refresh": "30/min",
+        "sf_password_reset": "5/min",
         # Abuse-report submission.
         "sf_report": "10/min",
         # Referral link click tracking.
@@ -220,6 +221,10 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "noreply@stock-finder.shop")
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
+
+# Password reset — emailed links point at the frontend and expire after an hour.
+SF_FRONTEND_URL = os.environ.get("SF_FRONTEND_URL", "http://localhost:3000").rstrip("/")
+PASSWORD_RESET_TIMEOUT = 3600
 
 LOGGING = {
     "version": 1,

@@ -1,4 +1,4 @@
-from .auth import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, RefreshTokenView, RegisterView, ShopSignupRequestView
+from .auth import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, PasswordResetConfirmView, PasswordResetRequestView, RefreshTokenView, RegisterView, ShopSignupRequestView
 from .referral import MyReferralCodeView, TrackReferralClickView
 
 __all__ = [
@@ -7,6 +7,8 @@ __all__ = [
     "OTPRequestView",
     "OTPVerifyView",
     "OwnerProfileView",
+    "PasswordResetConfirmView",
+    "PasswordResetRequestView",
     "RefreshTokenView",
     "RegisterView",
     "ShopSignupRequestView",

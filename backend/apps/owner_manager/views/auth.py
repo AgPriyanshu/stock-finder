@@ -1,10 +1,15 @@
+import logging
+
 import jwt
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import F
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -19,12 +24,16 @@ from ..serializers import (
     OTPRequestSerializer,
     OTPVerifySerializer,
     OwnerProfileSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
     RefreshTokenSerializer,
     RegisterSerializer,
     ShopSignupRequestSerializer,
 )
 from ..services.jwt_tokens import decode_token, issue_token
 from ..services.otp import request_otp, verify_otp
+
+logger = logging.getLogger(__name__)
 
 
 def _client_ip(request):
@@ -194,6 +203,81 @@ class ChangePasswordView(APIView):
         user.save()
 
         return Response({"changed": True}, status=status.HTTP_200_OK)
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_scope = "sf_password_reset"
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        user = User.objects.filter(username=email, is_active=True).first()
+
+        # The response is identical whether or not the account exists, so the
+        # endpoint can't be used to discover registered emails.
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = f"{settings.SF_FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+            expiry_minutes = settings.PASSWORD_RESET_TIMEOUT // 60
+
+            try:
+                send_mail(
+                    subject="Reset your Stock Finder password",
+                    message=(
+                        f"Hi {user.first_name},\n\n"
+                        "We received a request to reset your Stock Finder password. "
+                        "Open the link below to choose a new one:\n\n"
+                        f"{reset_url}\n\n"
+                        f"This link expires in {expiry_minutes} minutes. "
+                        "If you didn't ask for this, you can ignore this email.\n"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                )
+            except Exception:
+                logger.exception("Failed to send password reset email.")
+
+        return Response({"sent": True}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_scope = "sf_password_reset"
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            user_id = int(force_str(urlsafe_base64_decode(data["uid"])))
+            user = User.objects.get(pk=user_id, is_active=True)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            user = None
+
+        if user is None or not default_token_generator.check_token(user, data["token"]):
+            return Response(
+                {
+                    "meta": {
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "success": False,
+                        "message": "This reset link is invalid or has expired.",
+                    },
+                    "data": None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(data["new_password"])
+        user.save()
+
+        return Response({"reset": True}, status=status.HTTP_200_OK)
 
 
 class RegisterView(APIView):

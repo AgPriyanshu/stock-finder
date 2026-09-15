@@ -196,6 +196,20 @@ export const LoginPage = () => {
                 )}
               </Field.Root>
 
+              <Button
+                asChild
+                variant="plain"
+                size="sm"
+                color="fg.muted"
+                textDecor="underline"
+                alignSelf="flex-end"
+                p={0}
+                h="auto"
+                mt={-3}
+              >
+                <Link to={RoutePath.ForgotPassword}>Forgot password?</Link>
+              </Button>
+
               <Button type="submit" loading={isPending} w="full">
                 Sign in
               </Button>

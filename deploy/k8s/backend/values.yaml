@@ -96,4 +96,7 @@ env:
     value: "2592000"
   - name: SF_ADMIN_TOKEN
     value: "h74UCxJN05Wl8YzbPWKh8iHqZL3VZ8KCd9_H6a9Oj8Y"
+  # Frontend origin used to build password-reset links in emails.
+  - name: SF_FRONTEND_URL
+    value: "https://app.stock-finder.shop"
   # Email — injected from the backend-app-secrets Secret (see below).

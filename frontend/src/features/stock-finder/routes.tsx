@@ -4,8 +4,10 @@ import {
   getOwnerToken,
   setAccessToken,
 } from "shared/local-storage/token";
+import { ForgotPasswordPage } from "./components/auth/forgot-password-page";
 import { LoginPage } from "./components/auth/login-page";
 import { RegisterPage } from "./components/auth/register-page";
+import { ResetPasswordPage } from "./components/auth/reset-password-page";
 import { AnalyticsDashboard } from "./components/owner/analytics-dashboard";
 import { LeadInbox } from "./components/owner/lead-inbox";
 import { OnboardingFlow } from "./components/owner/onboarding-flow";
@@ -60,6 +62,16 @@ export const StockFinderRoutes = () => (
           </GuestRoute>
         }
       />
+      <Route
+        path="forgot-password"
+        element={
+          <GuestRoute>
+            <ForgotPasswordPage />
+          </GuestRoute>
+        }
+      />
+      {/* Not guest-only, so the emailed link works even in a signed-in browser. */}
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="shops/:id" element={<ShopProfile />} />
       <Route path="terms" element={<TermsPage />} />
       <Route path="privacy" element={<PrivacyPage />} />
