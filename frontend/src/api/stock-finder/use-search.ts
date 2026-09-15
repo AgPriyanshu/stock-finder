@@ -8,6 +8,9 @@ import type {
   SfSearchParams,
 } from "./types";
 
+// Large pages keep the map's load-every-page pass down to a few requests.
+const SEARCH_PAGE_SIZE = 100;
+
 export const useSearchAutocomplete = (q: string) =>
   useQuery({
     queryKey: QueryKeys.stockFinder.autocomplete(q),
@@ -28,11 +31,14 @@ export const useSearchItems = (
   return useInfiniteQuery({
     queryKey: QueryKeys.stockFinder.search(params),
     queryFn: async ({ pageParam }) => {
+      const { category, ...rest } = params;
       const response = await api.get<ApiResponse<SfSearchPage>>(
         "/search/items/",
         {
           params: {
-            ...params,
+            ...rest,
+            categorySlug: category,
+            limit: SEARCH_PAGE_SIZE,
             cursor: pageParam ?? undefined,
           },
         }

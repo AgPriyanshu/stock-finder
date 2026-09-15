@@ -20,6 +20,8 @@ import { ResultsMap } from "./results-map";
 import { SearchBar } from "./search-bar";
 import { flattenResults } from "./search-utils";
 
+const MAP_MAX_ITEMS = 500;
+
 const numberParam = (value: string | null) =>
   value === null || value === "" ? undefined : Number(value);
 
@@ -158,6 +160,23 @@ export const SearchPage = () => {
     enabled: locationReady,
   });
   const items = flattenResults(searchQuery.data?.pages);
+
+  // The map plots every matching shop in the radius, so it loads all pages
+  // instead of waiting for the list's infinite scroll.
+  const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
+    searchQuery;
+  useEffect(() => {
+    if (view !== "map" || !hasNextPage || isFetchingNextPage) return;
+    if (isFetchNextPageError || items.length >= MAP_MAX_ITEMS) return;
+    void fetchNextPage();
+  }, [
+    view,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+    items.length,
+  ]);
 
   const prevLoadingRef = useRef(false);
   useEffect(() => {

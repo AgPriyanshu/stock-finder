@@ -69,7 +69,16 @@ export const ResultsMap = ({
   const [initialLat] = useState(lat);
   const [initialLng] = useState(lng);
   const isProgrammaticMoveRef = useRef(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeShopId, setActiveShopId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const activeShopItems = useMemo(
+    () =>
+      activeShopId === null
+        ? []
+        : sortedItems.filter((item) => item.shop === activeShopId),
+    [sortedItems, activeShopId]
+  );
 
   useEffect(() => {
     itemsRef.current = sortedItems;
@@ -88,13 +97,14 @@ export const ResultsMap = ({
       });
 
       map.on("click", shopMarkerLayerIds.points, (event) => {
-        const itemId = event.features?.[0]?.properties?.itemId;
-        const index = itemsRef.current.findIndex(
-          (candidate) => candidate.id === itemId
+        const shopId = event.features?.[0]?.properties?.shopId;
+        const item = itemsRef.current.find(
+          (candidate) => candidate.shop === shopId
         );
-        if (index !== -1) {
-          setActiveIndex(index);
-          flyToItem(map, itemsRef.current[index]!, isProgrammaticMoveRef);
+        if (item) {
+          setActiveShopId(item.shop);
+          setActiveIndex(0);
+          flyToItem(map, item, isProgrammaticMoveRef);
         }
       });
 
@@ -119,7 +129,7 @@ export const ResultsMap = ({
           layers: [shopMarkerLayerIds.points, shopMarkerLayerIds.clusters],
         });
         if (features.length === 0) {
-          setActiveIndex(null);
+          setActiveShopId(null);
         }
       });
     });
@@ -264,15 +274,6 @@ export const ResultsMap = ({
     }
   }, [isVisible]);
 
-  const handleNavigate = (index: number) => {
-    setActiveIndex(index);
-    const map = mapRef.current;
-    const item = sortedItems[index];
-    if (map && item) {
-      flyToItem(map, item, isProgrammaticMoveRef);
-    }
-  };
-
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
   const handleZoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
 
@@ -366,12 +367,12 @@ export const ResultsMap = ({
         )}
       </VStack>
 
-      {activeIndex !== null && resultCount > 0 && (
+      {activeShopItems.length > 0 && (
         <MapItemCarousel
-          items={sortedItems}
-          activeIndex={activeIndex}
-          onNavigate={handleNavigate}
-          onClose={() => setActiveIndex(null)}
+          items={activeShopItems}
+          activeIndex={Math.min(activeIndex, activeShopItems.length - 1)}
+          onNavigate={setActiveIndex}
+          onClose={() => setActiveShopId(null)}
         />
       )}
     </Box>
