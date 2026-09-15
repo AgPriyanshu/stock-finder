@@ -12,6 +12,7 @@ from .views import (
     RefreshTokenView,
     RegisterView,
     ShopSignupRequestView,
+    SupportRequestView,
     TrackReferralClickView,
 )
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path("password-reset/confirm/", PasswordResetConfirmView.as_view(), name="sf-password-reset-confirm"),
     path("me/", OwnerProfileView.as_view(), name="sf-owner-profile"),
     path("signup-request/", ShopSignupRequestView.as_view(), name="sf-signup-request"),
+    path("support/", SupportRequestView.as_view(), name="sf-support-request"),
     path("referral/", MyReferralCodeView.as_view(), name="sf-referral-code"),
     path("referral/track/", TrackReferralClickView.as_view(), name="sf-referral-track"),
 ]

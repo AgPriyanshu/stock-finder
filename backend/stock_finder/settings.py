@@ -178,6 +178,8 @@ REST_FRAMEWORK = {
         "sf_password_reset": "5/min",
         # Abuse-report submission.
         "sf_report": "10/min",
+        # Contact-support messages are emailed straight to the team.
+        "sf_support": "5/hour",
         # Referral link click tracking.
         "sf_referral_track": "60/min",
     },

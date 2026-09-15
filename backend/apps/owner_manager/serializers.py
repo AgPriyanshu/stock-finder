@@ -81,6 +81,11 @@ class ShopSignupRequestSerializer(serializers.Serializer):
     city = serializers.CharField(max_length=100, allow_blank=True, default="")
 
 
+class SupportRequestSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=200)
+    comments = serializers.CharField(max_length=5000)
+
+
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     password = serializers.CharField(min_length=8)
