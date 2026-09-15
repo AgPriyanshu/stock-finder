@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ApiResponse } from "api/types";
+import { queryClient } from "api/query-client";
 import { QueryKeys } from "api/query-keys";
 import type { AxiosResponse } from "axios";
 import { setAccessToken, setOwnerToken } from "../../shared/local-storage/token";
 import api from "../api";
-import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, PasswordResetConfirmPayload, PasswordResetRequestPayload, ReferralCode, RegisterPayload, ShopSignupRequestPayload, SupportRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
+import type { ChangePasswordPayload, LoginCredentials, LoginResponse, OwnerProfile, OwnerTourName, OwnerToursStatus, PasswordResetConfirmPayload, PasswordResetRequestPayload, ReferralCode, RegisterPayload, ShopSignupRequestPayload, SupportRequestPayload, TrackReferralClickPayload, UpdateOwnerProfilePayload } from "./types";
 
 export const useLogin = () => {
   return useMutation({
@@ -82,7 +83,7 @@ export const useRegister = () => {
     onSuccess: (response: AxiosResponse<ApiResponse<LoginResponse>>) => {
       const token = response.data.data.token;
       setOwnerToken(token);
-      // Set access token immediately so API calls in the welcome modal work.
+      // Set access token immediately so the owner's first API calls are authenticated.
       setAccessToken(token);
     },
   });
@@ -93,6 +94,24 @@ export const useReferralCode = () => {
     queryKey: QueryKeys.referralCode,
     queryFn: async () => api.get<ApiResponse<ReferralCode>>("/auth/referral/"),
     select: (r) => r.data.data,
+  });
+};
+
+export const useOwnerTours = () => {
+  return useQuery({
+    queryKey: QueryKeys.ownerTours,
+    queryFn: async () => api.get<ApiResponse<OwnerToursStatus>>("/auth/tours/"),
+    select: (r) => r.data.data,
+  });
+};
+
+export const useCompleteOwnerTour = () => {
+  return useMutation({
+    mutationFn: async (name: OwnerTourName) =>
+      api.post<ApiResponse<OwnerToursStatus>>("/auth/tours/", { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.ownerTours });
+    },
   });
 };
 

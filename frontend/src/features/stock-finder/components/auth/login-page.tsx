@@ -5,6 +5,7 @@ import {
   Heading,
   Input,
   InputGroup,
+  Link as ChakraLink,
   // PinInput,
   Text,
   VStack,
@@ -45,7 +46,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 export const LoginPage = () => {
   useSeo({
     title: "Shop Owner Login",
-    description: "Sign in to your Stock Finder shop owner account to manage your inventory, view leads, and update your shop profile.",
+    description:
+      "Sign in to your Stock Finder shop owner account to manage your inventory, view leads, and update your shop profile.",
     noIndex: true,
   });
 
@@ -283,10 +285,9 @@ export const LoginPage = () => {
         ── end OTP login ──────────────────────────────────────────────────── */}
 
         <Text fontSize="sm" color="fg.muted" textAlign="center">
-          New here?{" "}
-          <Button asChild variant="plain" size="sm" color="fg" textDecor="underline" p={0} h="auto">
+          <ChakraLink asChild color="fg" textDecor="underline">
             <Link to={RoutePath.Register}>Create a shop account</Link>
-          </Button>
+          </ChakraLink>
         </Text>
 
         <Button asChild variant="ghost" size="sm" color="fg.muted">
@@ -295,7 +296,6 @@ export const LoginPage = () => {
           </Link>
         </Button>
       </VStack>
-
     </Box>
   );
 };

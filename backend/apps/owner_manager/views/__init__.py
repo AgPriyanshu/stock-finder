@@ -1,6 +1,7 @@
 from .auth import ChangePasswordView, LoginView, OTPRequestView, OTPVerifyView, OwnerProfileView, PasswordResetConfirmView, PasswordResetRequestView, RefreshTokenView, RegisterView, ShopSignupRequestView
 from .referral import MyReferralCodeView, TrackReferralClickView
 from .support import SupportRequestView
+from .tours import OwnerToursView
 
 __all__ = [
     "ChangePasswordView",
@@ -8,6 +9,7 @@ __all__ = [
     "OTPRequestView",
     "OTPVerifyView",
     "OwnerProfileView",
+    "OwnerToursView",
     "PasswordResetConfirmView",
     "PasswordResetRequestView",
     "RefreshTokenView",

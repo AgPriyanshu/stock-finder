@@ -19,6 +19,7 @@ import { useOwnerNotifications } from "../../hooks/use-owner-notifications";
 import { BrandHeading } from "../brand-heading";
 import { ContactSupportDialog } from "../support/contact-support-dialog";
 import { ChangePasswordModal } from "./change-password-modal";
+import { OwnerProductTour } from "./owner-product-tour";
 
 const NAV_ITEMS = [
   {
@@ -72,6 +73,7 @@ export const OwnerLayout = () => {
           <HStack gap={{ base: 2, md: 6 }}>
               <IconButton
                 aria-label="Open menu"
+                data-tour="menu"
                 variant="ghost"
                 size="sm"
                 onClick={() => setDrawerOpen(true)}
@@ -89,6 +91,7 @@ export const OwnerLayout = () => {
                   return (
                     <Button
                       key={to}
+                      data-tour={`nav-${to.split("/").pop()}`}
                       asChild
                       variant="ghost"
                       size="sm"
@@ -121,6 +124,7 @@ export const OwnerLayout = () => {
           <HStack gap={1}>
             <IconButton
               aria-label="Contact support"
+              data-tour="help"
               variant="ghost"
               size="sm"
               color="fg.muted"
@@ -248,6 +252,7 @@ export const OwnerLayout = () => {
         isOpen={supportOpen}
         onClose={() => setSupportOpen(false)}
       />
+      <OwnerProductTour />
     </Flex>
   );
 };

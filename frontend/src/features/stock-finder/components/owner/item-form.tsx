@@ -203,6 +203,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
               onChange={(e) => handlePendingFiles(e.target.files)}
             />
             <Box
+              data-tour="item-photos"
               p={4}
               border="1px dashed"
               borderColor="border.default"
@@ -272,7 +273,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           </Box>
         )}
 
-        <Field.Root invalid={!!errors.name}>
+        <Field.Root invalid={!!errors.name} data-tour="item-name">
           <Field.Label>Name *</Field.Label>
           <Box position="relative" w="full">
             <HStack gap={0}>
@@ -357,7 +358,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           )}
         </Field.Root>
 
-        <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
+        <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4} data-tour="item-quantity-price">
           <Field.Root invalid={!!errors.quantity}>
             <Field.Label>Quantity *</Field.Label>
             <Input
@@ -379,7 +380,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           </Field.Root>
         </SimpleGrid>
 
-        <Field.Root invalid={!!errors.category}>
+        <Field.Root invalid={!!errors.category} data-tour="item-category">
           <HStack justify="space-between" align="center" w="full">
             <Field.Label mb={0}>Category *</Field.Label>
             <Button
@@ -445,7 +446,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
           )}
         </Field.Root>
 
-        <Field.Root invalid={!!errors.condition}>
+        <Field.Root invalid={!!errors.condition} data-tour="item-condition">
           <Field.Label>Condition *</Field.Label>
           <Controller
             name="condition"
@@ -504,6 +505,7 @@ export const ItemForm = ({ initialData, onClose }: ItemFormProps) => {
             Cancel
           </Button>
           <Button
+            data-tour="item-save"
             type="submit"
             loading={isBusy}
             w={{ base: "full", sm: "auto" }}

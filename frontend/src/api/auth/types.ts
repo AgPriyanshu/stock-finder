@@ -62,6 +62,12 @@ export interface ReferralCode {
   signupCount: number;
 }
 
+export type OwnerTourName = "portal" | "add_item";
+
+export interface OwnerToursStatus {
+  completed: OwnerTourName[];
+}
+
 export interface TrackReferralClickPayload {
   code: string;
 }

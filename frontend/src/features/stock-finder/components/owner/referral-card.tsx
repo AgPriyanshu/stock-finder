@@ -9,36 +9,16 @@ import {
   Skeleton,
   Text,
 } from "@chakra-ui/react";
-import { useReferralCode } from "api/auth";
 import { FiCopy, FiShare2, FiUsers } from "react-icons/fi";
-import { toaster } from "design-system/toaster/toaster-instance";
-
-const WHATSAPP_MESSAGE = (link: string) =>
-  `Hey! I use *Stock Finder* to list my shop inventory and get buyer leads. Join me — the more shop owners we have, the more customers discover all of us! 🚀\n\nSign up here: ${link}`;
+import { useReferralShare } from "../../hooks/use-referral-share";
 
 export const ReferralCard = () => {
-  const { data: referral, isLoading } = useReferralCode();
-
-  const referralLink = referral
-    ? `${window.location.origin}/register?ref=${referral.code}`
-    : "";
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      toaster.success({ title: "Link copied!" });
-    } catch {
-      toaster.error({ title: "Could not copy. Try manually." });
-    }
-  };
-
-  const handleWhatsApp = () => {
-    const text = encodeURIComponent(WHATSAPP_MESSAGE(referralLink));
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
-  };
+  const { referral, referralLink, isLoading, copyLink, shareOnWhatsApp } =
+    useReferralShare();
 
   return (
     <Box
+      className="referral-card"
       borderWidth="1px"
       borderColor="border.default"
       borderRadius="lg"
@@ -82,7 +62,7 @@ export const ReferralCard = () => {
             size="xs"
             variant="ghost"
             colorPalette="gray"
-            onClick={handleCopy}
+            onClick={copyLink}
             aria-label="Copy referral link"
             px={2}
           >
@@ -106,7 +86,7 @@ export const ReferralCard = () => {
         <Button
           size="sm"
           variant="outline"
-          onClick={handleCopy}
+          onClick={copyLink}
           disabled={isLoading}
         >
           <FiCopy />
@@ -115,7 +95,7 @@ export const ReferralCard = () => {
         <Button
           size="sm"
           colorPalette="green"
-          onClick={handleWhatsApp}
+          onClick={shareOnWhatsApp}
           disabled={isLoading}
         >
           <FiShare2 />

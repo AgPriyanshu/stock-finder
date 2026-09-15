@@ -2,6 +2,8 @@ import re
 
 from rest_framework import serializers
 
+from .models import OwnerTour
+
 PHONE_REGEX = re.compile(r"^\+91[6-9]\d{9}$")
 
 
@@ -44,6 +46,10 @@ class LoginSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
+
+
+class CompleteOwnerTourSerializer(serializers.Serializer):
+    name = serializers.ChoiceField(choices=OwnerTour.Name.choices)
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

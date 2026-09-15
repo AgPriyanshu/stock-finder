@@ -20,8 +20,13 @@ import { FiPlus, FiUpload } from "react-icons/fi";
 import { toaster } from "design-system/toaster/toaster-instance";
 import { useBulkUploadItems, useMyItems } from "api/stock-finder";
 import type { SfBulkUploadItemsResponse, SfItem } from "api/stock-finder";
+import { useOwnerTours } from "api/auth";
+import { useOwnerTour } from "../../hooks/use-owner-tour";
+import { ADD_ITEM_TOUR_STEPS } from "./add-item-tour-steps";
 import { ItemForm } from "./item-form";
 import { ItemRow } from "./item-row";
+import { ProductTour } from "./product-tour";
+import { StaleItemsBanner } from "./stale-items-banner";
 
 const formatBulkUploadError = (error: unknown) => {
   const axiosError = error as AxiosError<{
@@ -54,6 +59,14 @@ export const InventoryList = () => {
   const { data: items, isLoading } = useMyItems();
   const bulkUploadItems = useBulkUploadItems();
   const isMobile = useBreakpointValue({ base: true, md: false });
+
+  // The add item tour runs the first time an owner opens a new item form, after the portal tour.
+  const { data: tours } = useOwnerTours();
+  const hasFinishedPortalTour = !!tours?.completed.includes("portal");
+  const addItemTour = useOwnerTour(
+    "add_item",
+    isModalOpen && !editingItem && hasFinishedPortalTour
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -219,6 +232,7 @@ export const InventoryList = () => {
             <FiUpload /> Upload CSV
           </Button>
           <Button
+            data-tour="add-item"
             onClick={() => {
               setEditingItem(undefined);
               setIsModalOpen(true);
@@ -230,12 +244,18 @@ export const InventoryList = () => {
         </Flex>
       </Flex>
 
+      {items && <StaleItemsBanner items={items} />}
       {renderContent()}
 
       <Dialog.Root
         open={isModalOpen}
         onOpenChange={(e) => !e.open && handleCloseModal()}
         placement="center"
+        // The tour card renders outside the dialog, so while it runs the dialog must not
+        // trap focus, hide the rest of the page, or close when the card is clicked.
+        modal={!addItemTour.isActive}
+        trapFocus={!addItemTour.isActive}
+        closeOnInteractOutside={!addItemTour.isActive}
       >
         <Portal>
           <Dialog.Backdrop />
@@ -259,6 +279,10 @@ export const InventoryList = () => {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      {addItemTour.isActive && (
+        <ProductTour steps={ADD_ITEM_TOUR_STEPS} onFinish={addItemTour.finish} />
+      )}
     </Box>
   );
 };

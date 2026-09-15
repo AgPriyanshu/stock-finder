@@ -5,6 +5,7 @@ import {
   Heading,
   Input,
   InputGroup,
+  Link as ChakraLink,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -32,7 +33,8 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export const RegisterPage = () => {
   useSeo({
     title: "Create Shop Account",
-    description: "Register your shop on Stock Finder to start receiving leads from nearby buyers.",
+    description:
+      "Register your shop on Stock Finder to start receiving leads from nearby buyers.",
     noIndex: true,
   });
 
@@ -63,7 +65,7 @@ export const RegisterPage = () => {
             "Registration failed. Please try again.";
           toaster.create({ description: msg, type: "error" });
         },
-      }
+      },
     );
   };
 
@@ -120,7 +122,12 @@ export const RegisterPage = () => {
               </Field.Root>
 
               <Field.Root>
-                <Field.Label>Last name <Text as="span" color="fg.muted" fontSize="xs">(optional)</Text></Field.Label>
+                <Field.Label>
+                  Last name{" "}
+                  <Text as="span" color="fg.muted" fontSize="xs">
+                    (optional)
+                  </Text>
+                </Field.Label>
                 <InputGroup startElement={<MdPerson />}>
                   <Input
                     {...form.register("lastName")}
@@ -172,10 +179,10 @@ export const RegisterPage = () => {
         </Box>
 
         <Text fontSize="sm" color="fg.muted" textAlign="center">
-          Already have an account?{" "}
-          <Button asChild variant="plain" size="sm" color="fg" textDecor="underline" p={0} h="auto">
+          Already have an account? <br />
+          <ChakraLink asChild color="fg" textDecor="underline">
             <Link to={RoutePath.Login}>Sign in</Link>
-          </Button>
+          </ChakraLink>
         </Text>
 
         <Button asChild variant="ghost" size="sm" color="fg.muted">

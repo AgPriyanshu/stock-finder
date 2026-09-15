@@ -36,6 +36,7 @@ export const QueryKeys = {
   // Dead Stock.
   ownerProfile: ["owner-profile"] as const,
   referralCode: ["referral-code"] as const,
+  ownerTours: ["owner-tours"] as const,
   stockFinder: {
     categories: ["stock-finder", "categories"] as const,
     myShop: ["stock-finder", "shops", "me"] as const,

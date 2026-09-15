@@ -1,8 +1,11 @@
 import { Badge } from "@chakra-ui/react";
 import type { SfItem } from "api/stock-finder";
+import { getItemFreshness } from "./item-freshness";
 
 export const StatusBadge = ({ item }: { item: SfItem }) => {
-  if (item.status === "hidden") {
+  const freshness = getItemFreshness(item);
+
+  if (freshness === "hidden") {
     return (
       <Badge variant="subtle" colorPalette="gray">
         Hidden
@@ -10,11 +13,7 @@ export const StatusBadge = ({ item }: { item: SfItem }) => {
     );
   }
 
-  const now = new Date();
-  const staleAt = new Date(item.staleAt);
-  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  if (staleAt < now) {
+  if (freshness === "stale") {
     return (
       <Badge variant="outline" borderColor="fg" color="fg" border="1px solid">
         Stale — refresh to publish
@@ -22,7 +21,7 @@ export const StatusBadge = ({ item }: { item: SfItem }) => {
     );
   }
 
-  if (staleAt < sevenDaysFromNow) {
+  if (freshness === "refresh-soon") {
     return (
       <Badge
         variant="outline"
