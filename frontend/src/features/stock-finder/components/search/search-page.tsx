@@ -41,7 +41,6 @@ export const SearchPage = () => {
       q: searchParams.get("q") || undefined,
       lat: numberParam(searchParams.get("lat")),
       lng: numberParam(searchParams.get("lng")),
-      radiusKm: numberParam(searchParams.get("radiusKm")) ?? 5,
       category: searchParams.get("category") || undefined,
       minPrice: numberParam(searchParams.get("minPrice")),
       maxPrice: numberParam(searchParams.get("maxPrice")),
@@ -57,7 +56,6 @@ export const SearchPage = () => {
     const next = new URLSearchParams(searchParams);
     next.set("lat", String(saved.lat));
     next.set("lng", String(saved.lng));
-    next.set("radiusKm", next.get("radiusKm") || "5");
     setSearchParams(next, { replace: true });
     // Run once on mount only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,14 +83,12 @@ export const SearchPage = () => {
       const next = new URLSearchParams(searchParams);
       next.set("lat", newLat);
       next.set("lng", newLng);
-      next.set("radiusKm", next.get("radiusKm") || "5");
       setSearchParams(next, { replace: true });
     } else if (!searchParams.get("lat") && !searchParams.get("lng")) {
       // IP-based fallback: only set if the URL has no location at all.
       const next = new URLSearchParams(searchParams);
       next.set("lat", newLat);
       next.set("lng", newLng);
-      next.set("radiusKm", next.get("radiusKm") || "5");
       setSearchParams(next, { replace: true });
     }
   }, [buyerLocation, customLocationLabel, searchParams, setSearchParams]);
@@ -161,8 +157,8 @@ export const SearchPage = () => {
   });
   const items = flattenResults(searchQuery.data?.pages);
 
-  // The map plots every matching shop in the radius, so it loads all pages
-  // instead of waiting for the list's infinite scroll.
+  // The map plots every matching shop, so it loads all pages instead of
+  // waiting for the list's infinite scroll.
   const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
     searchQuery;
   useEffect(() => {
@@ -315,11 +311,7 @@ export const SearchPage = () => {
           h="full"
           overflowY="auto"
         >
-          <ResultsList
-            query={searchQuery}
-            radiusKm={params.radiusKm || 5}
-            onExpandRadius={() => updateParams({ radiusKm: 10 })}
-          />
+          <ResultsList query={searchQuery} />
         </Box>
         <Box display={view === "map" ? "block" : "none"} h="full">
           <ResultsMap

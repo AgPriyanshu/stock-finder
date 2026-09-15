@@ -130,15 +130,6 @@ class SearchViewSet(ViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        radius_km = 10.0
-        raw_radius = request.query_params.get("radius_km")
-
-        if raw_radius:
-            try:
-                radius_km = float(raw_radius)
-            except (ValueError, TypeError):
-                pass
-
         min_price = None
         raw_min = request.query_params.get("min_price")
 
@@ -170,7 +161,6 @@ class SearchViewSet(ViewSet):
             q=q,
             lat=lat,
             lng=lng,
-            radius_km=radius_km,
             category_slug=category_slug,
             min_price=min_price,
             max_price=max_price,

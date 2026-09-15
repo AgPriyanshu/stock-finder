@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 VALID_SORTS = {"distance", "recent", "price"}
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
-DEFAULT_RADIUS_KM = 10
 
 
 def _encode_cursor(sort: str, last_value, last_id: str) -> str:
@@ -38,7 +37,6 @@ def build_search_qs(
     q: str = "",
     lat: float | None = None,
     lng: float | None = None,
-    radius_km: float = DEFAULT_RADIUS_KM,
     category_slug: str = "",
     min_price: float | None = None,
     max_price: float | None = None,
@@ -63,7 +61,6 @@ def build_search_qs(
 
     if lat is not None and lng is not None:
         point = Point(lng, lat, srid=4326)
-        qs = qs.filter(shop__location__dwithin=(point, D(km=radius_km)))
         qs = qs.annotate(distance=Distance("shop__location", point))
 
     if q:

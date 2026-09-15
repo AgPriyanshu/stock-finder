@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Center,
   SimpleGrid,
   Spinner,
@@ -16,15 +15,9 @@ import { flattenResults } from "./search-utils";
 
 interface ResultsListProps {
   query: UseInfiniteQueryResult<InfiniteData<SfSearchPage>, Error>;
-  radiusKm: number;
-  onExpandRadius: () => void;
 }
 
-export const ResultsList = ({
-  query,
-  radiusKm,
-  onExpandRadius,
-}: ResultsListProps) => {
+export const ResultsList = ({ query }: ResultsListProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const items: SfSearchItem[] = flattenResults(query.data?.pages);
 
@@ -65,9 +58,11 @@ export const ResultsList = ({
 
   if (items.length === 0) {
     return (
-      <Center py={14} flexDir="column" gap={3} bg="bg.muted" borderRadius="md">
-        <Text fontWeight="semibold">No results in {radiusKm}km</Text>
-        <Button onClick={onExpandRadius}>Expand to 10km</Button>
+      <Center py={14} flexDir="column" gap={1} bg="bg.muted" borderRadius="md">
+        <Text fontWeight="semibold">No results found</Text>
+        <Text fontSize="sm" color="fg.muted">
+          Try a different keyword or category.
+        </Text>
       </Center>
     );
   }

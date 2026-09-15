@@ -126,7 +126,6 @@ export interface SfSearchParams {
   q?: string;
   lat?: number;
   lng?: number;
-  radiusKm?: number;
   category?: string;
   minPrice?: number;
   maxPrice?: number;
