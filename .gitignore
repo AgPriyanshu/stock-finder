@@ -59,7 +59,7 @@ test-results/
 Thumbs.db
 
 # Docker volume mounts (created by docker-compose at repo root).
-data/
+/data/
 
 # Misc.
 *.sql
